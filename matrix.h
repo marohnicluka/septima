@@ -2,23 +2,20 @@
  *
  * Copyright (c) 2020  Luka Marohnić
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of Septima.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * Septima is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Foobar is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef MATRIX_H
@@ -33,7 +30,6 @@ class Matrix {
     int _size;
     std::vector<double> _elm;
     void assign(const Matrix &other);
-    gsl_matrix *to_gsl_matrix() const;
 
 public:
     Matrix(int n);
@@ -45,6 +41,9 @@ public:
 
     int size() const;
     /* returns the order of this (square) matrix */
+
+    gsl_matrix *to_gsl_matrix() const;
+    /* convert this matrix to gsl_matrix */
 
     void set_element(int i, int j, double e);
     /* sets the element at (i,j) -- note that indices are 1-based */
@@ -65,13 +64,13 @@ public:
     /* multiplies this matrix by other */
 
     Matrix exponential() const;
-    /* returns the matrix exponential */
+    /* returns the matrix exponential using GSL */
 
     Matrix inverse() const;
-    /* returns the inverse of this matrix */
+    /* returns the inverse of this matrix using GSL */
 
     std::vector<std::pair<double,double> > eigenvalues() const;
-    /* returns the eigenvalues of this matrix as a vector of pairs e=(x,y) where x=Re(e) and y=Im(e) */
+    /* returns the eigenvalues of this matrix as a vector of pairs e=(x,y) where x=Re(e) and y=Im(e), using GSL */
 
     void print() const;
     /* outputs the matrix on stdout */
