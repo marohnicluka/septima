@@ -1,17 +1,17 @@
 /* tone.cpp
  *
- * Copyright (c) 2020 Luka Marohnić
- * 
+ * Copyright (c) 2020  Luka Marohnić
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,129 +26,154 @@
 #include <assert.h>
 
 Tone::Tone() {
-    _deg = 0;
-    _acc = 0;
+    _lof = 0;
 }
 
-Tone::Tone(int p, int a) {
-    _deg = mod7(p);
-    _acc = a;
+Tone::Tone(int lof) {
+    _lof = lof;
 }
 
-int Tone::accidental(int key) const {
-    int k = abs(key), d = (key > 0 ? 3 : (d < 0 ? 6 : -1)), corr = 0;
-    for (int i = 0; i < k; ++i) {
-        if (degree() == d) {
-            corr = (key > 0 ? 1 : -1);
-            break;
-        }
-        if (key != 0)
-            d = mod7(d + (key > 0 ? 4 : -4));
+Tone::Tone(const Tone &other) {
+    _lof = other.lof_position();
+}
+
+Tone& Tone::operator =(const Tone &other) {
+    _lof = other.lof_position();
+    return *this;
+}
+
+bool Tone::operator ==(const Tone &other) const {
+    return _lof == other.lof_position();
+}
+
+bool Tone::operator !=(const Tone &other) const {
+    return !(*this == other);
+}
+
+bool Tone::operator <(const Tone &other) const {
+    return this->lof_position() < other.lof_position();
+}
+
+int Tone::lof_position() const {
+    return _lof;
+}
+
+int Tone::note_name() const {
+    return modb(4 * _lof + 1, 7);
+}
+
+int Tone::pitch_class() const {
+    return modb(7 * _lof + 2, 12);
+}
+
+int Tone::accidental() const {
+    int lof = _lof, acc = 0, dir = (_lof > 0 ? -1 : 1);
+    while (lof > 3 || lof < -3) {
+        lof += dir * 7;
+        acc -= dir;
     }
-    return _acc - corr;
+    return acc;
 }
 
-void Tone::set_degree(int p) {
-    _deg = mod7(p);
-}
-
-void Tone::set_accidental(int a) {
-    _acc = a;
-}
-
-int Tone::degree() const {
-    return _deg;
-}
-
-int Tone::pitch_base() const {
-    switch (degree()) {
-    case 0: return 0;
-    case 1: return 2;
-    case 2: return 4;
-    case 3: return 5;
-    case 4: return 7;
-    case 5: return 9;
-    case 6: return 11;
-    default: break;
-    }
-    assert(false);
-}
-
-int Tone::pitch() const {
-    return mod12(pitch_base() + _acc);
-}
-
-int Tone::double_sharps[] = { 1, 1, 0, 1, 1, 1, 0 };
-
-int Tone::double_flats[]  = { 0, 1, 1, 0, 1, 1, 1 };
-
-bool Tone::is_valid() const {
-    return abs(_acc) < 3 && (_acc != -2 || double_flats[_deg]) && (_acc != 2 || double_sharps[_deg]);
+void Tone::transpose(int steps) {
+    _lof += steps;
 }
 
 std::string Tone::to_string() const {
     const char* names = "CDEFGAB";
-    char res[8];
-    res[0] = names[_deg];
-    for (int i = 0; i < abs(_acc); ++i) {
-        res[1+i] = (_acc<0?'b':'#');
+    char res[64];
+    res[0] = names[note_name()];
+    int acc = accidental(), i = 0;
+    for (; i < abs(acc) && i < 62; ++i) {
+        res[i+1] = (acc < 0 ? 'b' : '#');
     }
-    res[1+abs(_acc)] = '\0';
+    res[i+1] = '\0';
     return std::string(res);
 }
 
-std::pair<int,int> Tone::interval(const Tone &other) const {
-    int generic_size = mod7(other.degree() - this->degree());
-    int specific_size = mod12(other.pitch() - this->pitch());
+std::string Tone::to_lily() const {
+    const char* names = "cdefgab";
+    char res[64];
+    int acc = accidental();
+    res[0] = names[note_name()];
+    for (int i = 0; i < abs(acc); ++i) {
+        res[2*(i+1)] = 's';
+        res[2*i+1] = (acc < 0 ? 'e' : 'i');
+    }
+    res[2*abs(acc)+1] = '\0';
+    return std::string(res);
+}
+
+ipair Tone::interval(const Tone &other) const {
+    int generic_size = modb(other.note_name() - this->note_name(), 7);
+    int specific_size = modb(other.pitch_class() - this->pitch_class(), 12);
     return std::make_pair(generic_size, specific_size);
 }
 
-std::pair<int,int> Tone::interval_abs(const Tone &a, const Tone &b) {
-    std::pair<int,int> intrv = a.interval(b);
+Tone Tone::structural_inversion() const {
+    Tone ret(-this->lof_position());
+    return ret;
+}
+
+ipair Tone::interval_abs(const Tone &a, const Tone &b) {
+    ipair intrv = a.interval(b);
     if (intrv.second <= 6)
         return intrv;
     return b.interval(a);
 }
 
-bool Tone::is_diatonic(const Tone &a, const Tone &b) {
-    std::pair<int,int> ip = interval_abs(a, b);
-    int w = ip.first, d = ip.second;
-    return w == 1 && d < 3 && d > 0;
+int Tone::lof_distance(const Tone &a, const Tone &b) {
+    return abs(a.lof_position() - b.lof_position());
 }
 
-bool Tone::is_chromatic(const Tone &a, const Tone &b) {
-    std::pair<int,int> ip = interval_abs(a, b);
-    int w = ip.first, d = ip.second;
-    return w == 0 && d == 1;
-}
-
-bool Tone::is_smooth(const Tone &a, const Tone &b) {
-    return a == b || is_diatonic(a, b) || is_chromatic(a, b);
-}
-
-Tone::Tone(const Tone &other) {
-    _deg = other.degree();
-    _acc = other.accidental();
-}
-
-Tone& Tone::operator =(const Tone &other) {
-    _deg = other.degree();
-    _acc = other.accidental();
-    return *this;
-}
-
-bool Tone::operator ==(const Tone &other) const {
-    return _deg == other.degree() && _acc == other.accidental();
-}
-
-int Tone::mod7(int k) {
+int Tone::modb(int k, int b) {
     int n = k;
-    while (n < 0) n += 7;
-    return n % 7;
+    while (n < 0) n += b;
+    return n % b;
 }
 
-int Tone::mod12(int k) {
-    int n = k;
-    while (n < 0) n += 12;
-    return n % 12;
+int Tone::modd(int k, int b) {
+    int n = modb(k, b);
+    if (n > b / 2)
+        return abs(n - b);
+    return n;
+}
+
+int Tone::pitch_class_to_lof(int pc) {
+    int k = 0;
+    while (true) {
+        if (Tone(k).pitch_class() == pc)
+            return k;
+        if (Tone(-k).pitch_class() == pc)
+            return -k;
+        ++k;
+    }
+    assert(false); // unreachable
+}
+
+std::ostream& operator <<(std::ostream &os, const Tone &t) {
+    os << t.to_string();
+    return os;
+}
+
+std::ostream& operator <<(std::ostream &os, const std::vector<Tone> &tv) {
+    int n = tv.size(), i = 0;
+    for (std::vector<Tone>::const_iterator it = tv.begin(); it != tv.end(); ++it) {
+        ++i;
+        os << it->to_string();
+        if (i != n)
+            os << ",";
+    }
+    return os;
+}
+
+std::ostream& operator <<(std::ostream &os, const std::set<Tone> &ts) {
+    int n = ts.size(), i = 0;
+    for (std::set<Tone>::const_iterator it = ts.begin(); it != ts.end(); ++it) {
+        ++i;
+        os << it->to_string();
+        if (i != n)
+            os << ",";
+    }
+    return os;
 }

@@ -1,17 +1,17 @@
 /* realization.cpp
  *
- * Copyright (c) 2020 Luka Marohnić
- * 
+ * Copyright (c) 2020  Luka Marohnić
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,9 +24,15 @@
 #include "realization.h"
 #include <assert.h>
 #include <set>
+#include <algorithm>
+#include <math.h>
 
 Realization::Realization(const Chord &c) {
     _chord = c;
+    _tones[0] = Tone::pitch_class_to_lof(c.root());
+    _tones[1] = Tone::pitch_class_to_lof(c.third());
+    _tones[2] = Tone::pitch_class_to_lof(c.fifth());
+    _tones[3] = Tone::pitch_class_to_lof(c.seventh());
 }
 
 Realization::Realization(const Realization &other) {
@@ -45,37 +51,28 @@ Realization& Realization::operator =(const Realization &other) {
 }
 
 bool Realization::operator ==(const Realization &other) const {
-    bool yes = _chord == other._chord;
-    for (int i = 0; yes && i < 4; ++i) {
-        yes = _tones[i] == other.tone(i);
-    }
-    return yes;
+    return this->tone_set() == other.tone_set();
 }
 
-bool Realization::is_equivalent(const Realization &other) const {
+bool Realization::operator !=(const Realization &other) const {
+    return !(*this == other);
+}
+
+bool Realization::operator <(const Realization &other) const {
+    return this->tone_set() < other.tone_set();
+}
+
+bool Realization::is_enharmonically_equal(const Realization &other) const {
     std::set<int> P1, P2;
     for (int i = 0; i < 4; ++i) {
-        P1.insert(_tones[i].pitch());
-        P2.insert(other.tone(i).pitch());
+        P1.insert(_tones[i].pitch_class());
+        P2.insert(other.tone(i).pitch_class());
     }
     return P1 == P2;
 }
 
-bool Realization::is_valid() const {
-    std::set<int> p, q;
-    for (int i = 0; i < 4; ++i) {
-        if (!_tones[i].is_valid()) return false;
-        p.insert(_tones[i].pitch() % 12);
-    }
-    q.insert(_chord.root());
-    q.insert(_chord.third());
-    q.insert(_chord.fifth());
-    q.insert(_chord.seventh());
-    return p == q;
-}
-
-bool Realization::is_augmented(bool tristan) const {
-    int t = chord_type();
+bool Realization::is_augmented_sixth(bool tristan) const {
+    int t = type();
     return t == TRISTAN || (!tristan && t == GERMAN_SIXTH);
 }
 
@@ -89,9 +86,34 @@ Tone &Realization::tone(int i) {
     return _tones[i];
 }
 
-int Realization::root_voice() const {
+std::set<Tone> Realization::tone_set() const {
+    std::set<Tone> S;
+    for (int i = 0; i < 4; ++i) {
+        S.insert(tone(i));
+    }
+    return S;
+}
+
+Realization Realization::structural_inverse() const {
+    Realization ret(this->chord().structural_inversion());
+    for (int i = 0; i < 4; ++i) {
+        ret.tone(i) = this->tone(3 - i).structural_inversion();
+    }
+    return ret;
+}
+
+double Realization::lof_point_distance(int z) const {
+    int sum = 0;
+    std::set<Tone> X = tone_set();
+    for (std::set<Tone>::const_iterator it = X.begin(); it != X.end(); ++it) {
+        sum += (it->lof_position() - z) * (it->lof_position() - z);
+    }
+    return sqrt(sum) / 2.0;
+}
+
+int Realization::generic_root_voice() const {
     int cnt = 0, ret = -1;
-    std::pair<int,int> ip;
+    ipair ip;
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
             if (i == j) continue;
@@ -106,13 +128,30 @@ int Realization::root_voice() const {
     return ret;
 }
 
-int Realization::seventh_voice() const {
+int Realization::generic_seventh_voice() const {
+    int cnt = 0, ret = -1;
+    ipair ip;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            if (i == j) continue;
+            ip = _tones[i].interval(_tones[j]);
+            if (ip.first == 1) {
+                ret = i;
+                ++cnt;
+            }
+        }
+    }
+    assert(cnt == 1);
+    return ret;
+}
+
+int Realization::acoustic_seventh_voice() const {
     int p1, p2, dp;
     for (int i = 0; i < 4; ++i) {
-        p1 = _tones[i].pitch();
+        p1 = _tones[i].pitch_class();
         for (int j = 0; j < 4; ++j) {
-            p2 = _tones[j].pitch();
-            dp = Tone::mod12(p2 - p1);
+            p2 = _tones[j].pitch_class();
+            dp = Tone::modb(p2 - p1, 12);
             if (dp == 1 || dp == 2)
                 return i;
         }
@@ -120,8 +159,8 @@ int Realization::seventh_voice() const {
     return -1;
 }
 
-int Realization::chord_type() const {
-    std::pair<int,int> ip;
+int Realization::type() const {
+    ipair ip;
     int cnt = 0, ret = -1;
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
@@ -139,17 +178,8 @@ int Realization::chord_type() const {
     return ret;
 }
 
-int Realization::acc_weight(int key) const {
-    int ret = 0;
-    for (int i = 0; i < 4; ++i) {
-        ret += abs(tone(i).accidental(key));
-    }
-    return ret;
-}
-
-bool Realization::requires_preparation() const {
-    int t = chord_type();
-    return t != DOMINANT && t != DIMINISHED && t != GERMAN_SIXTH;
+const Chord& Realization::chord() const {
+    return _chord;
 }
 
 void Realization::arrange(const std::vector<int> &perm) {
@@ -162,6 +192,28 @@ void Realization::arrange(const std::vector<int> &perm) {
     }
 }
 
+void Realization::transpose(int d) {
+    _chord.set_root(Tone::modb(_chord.root() + 7 * d, 12));
+    for (int i = 0; i < 4; ++i) {
+        tone(i).transpose(d);
+    }
+}
+
+bool Realization::check_fifths() const {
+    bool yes = true;
+    ipair p;
+    for (int i = 0; yes && i < 4; ++i) {
+        for (int j = 0; yes && j < 4; ++j) {
+            if (i == j)
+                continue;
+            p = tone(i).interval(tone(j));
+            if (p.first == 4 && p.second != 6 && p.second != 7)
+                yes = false;
+        }
+    }
+    return yes;
+}
+
 std::string Realization::to_string() const {
     std::string ret = "";
     for (int i = 0; i < 4; ++i) {
@@ -171,50 +223,93 @@ std::string Realization::to_string() const {
     return ret;
 }
 
-const int Realization::sym4[][4] = {
-    {0, 1, 2, 3}, {0, 1, 3, 2}, {0, 2, 1, 3}, {0, 2, 3, 1},
-    {0, 3, 1, 2}, {0, 3, 2, 1}, {1, 0, 2, 3}, {1, 0, 3, 2},
-    {1, 2, 0, 3}, {1, 2, 3, 0}, {1, 3, 0, 2}, {1, 3, 2, 0},
-    {2, 0, 1, 3}, {2, 0, 3, 1}, {2, 1, 0, 3}, {2, 1, 3, 0},
-    {2, 3, 0, 1}, {2, 3, 1, 0}, {3, 0, 1, 2}, {3, 0, 2, 1},
-    {3, 1, 0, 2}, {3, 1, 2, 0}, {3, 2, 0, 1}, {3, 2, 1, 0}
+const int Realization::lof_structure[][4] = {
+    {-2, 0, 1, 4},      // dominant
+    {-6, -3, -2, 0},    // half-diminished
+    {-3, -2, 0, 1},     // minor
+    {0, 1, 4, 5},       // major
+    {-9, -6, -3, 0},    // diminished
+    {0, 1, 4, 10},      // German sixth
+    {0, 6, 9, 10}       // Tristan chord
 };
 
-std::vector<Realization> Realization::generate(const Chord &c) {
+std::vector<Realization> Realization::tonal_realizations(const Chord &c, const Domain &dom, bool aug) {
     std::vector<Realization> ret;
-    int p[4], t[4], a, w, d;
-    bool ok;
-    p[0] = c.root ();
-    p[1] = c.third ();
-    p[2] = c.fifth ();
-    p[3] = c.seventh ();
-    for (t[0] = 0; t[0] < 4; t[0]++) {
-        for (t[1] = t[0] + 1; t[1] < 5; t[1]++) {
-            for (t[2] = t[1] + 1; t[2] < 6; t[2]++) {
-                for (t[3] = t[2] + 1; t[3] < 7; t[3]++) {
-                    for (int i = 0; i < 24; i++) {
-                        ok = true;
-                        Realization r(c);
-                        for (int j = 0; ok && j < 4; j++) {
-                            r.tone(j).set_degree(t[j]);
-                            a = Tone::mod12(p[sym4[i][j]] - r.tone(j).pitch_base());
-                            if (a > 6) a -= 12;
-                            r.tone(j).set_accidental(a);
-                            ok = r.tone(j).is_valid();
+    int ct = c.type(), rt;
+    Realization bs(c), r(c);
+    for (int lof = dom.lbound(); lof <= dom.ubound(); ++lof) {
+        for (int i = 0; i < 4; ++i) {
+            rt = lof + lof_structure[ct][i];
+            r.tone(i) = Tone(rt);
+        }
+        if (dom.contains(r.tone_set()) && bs.is_enharmonically_equal(r))
+            ret.push_back(r);
+        if (aug && (ct == 0 || ct == 1)) {
+            for (int i = 0; i < 4; ++i) {
+                rt = lof + lof_structure[ct+5][i];
+                r.tone(i) = Tone(rt);
+            }
+            if (dom.contains(r.tone_set()) && bs.is_enharmonically_equal(r))
+                ret.push_back(r);
+        }
+    }
+    return ret;
+}
+
+std::set<std::vector<int> > Realization::lof_patterns(const Chord &c, int &tot, int &ton, const Domain &dom) {
+    std::set<int> Pc = c.pitch_class_set(), Rp;
+    int k1, k2, k3, k4;
+    Realization r;
+    std::vector<int> pat(4), sig(3);
+    std::set<std::vector<int> > ret;
+    int lb = dom.lbound(), ub = dom.ubound();
+    for (k1 = lb; k1 <= ub; ++k1) {
+        r.tone(0) = Tone(k1);
+        for (k2 = k1 + 1; k2 <= ub; ++k2) {
+            r.tone(1) = Tone(k2);
+            for (k3 = k2 + 1; k3 <= ub; ++k3) {
+                r.tone(2) = Tone (k3);
+                for (k4 = k3 + 1; k4 <= ub; ++k4) {
+                    r.tone(3) = Tone (k4);
+                    if (!dom.contains(r.tone_set()))
+                        continue;
+                    Rp.clear();
+                    for (int i = 0; i < 4; ++i) {
+                        Rp.insert(r.tone(i).pitch_class());
+                    }
+                    if (Rp != Pc)
+                        continue;
+                    ++tot;
+                    if (r.check_fifths()) {
+                        for (int i = 0; i < 4; ++i) {
+                            pat[i] = r.tone(i).lof_position();
                         }
-                        for (int j = 0; ok && j < 3; j++) {
-                            for (int k = j + 1; ok && k < 4; k++) {
-                                std::pair<int,int> ip = r.tone(j).interval(r.tone(k));
-                                w = ip.first; d = ip.second;
-                                if ((w == 3 && d != 5 && d != 6) || (w == 4 && d != 7 && d != 6))
-                                    ok = false;
-                            }
+                        std::sort(pat.begin(), pat.end());
+                        for (int i = 0; i < 3; ++i) {
+                            sig[i] = pat[i+1] - pat[i];
                         }
-                        if (ok) ret.push_back(r);
+                        ret.insert(sig);
+                        ++ton;
                     }
                 }
             }
         }
     }
     return ret;
+}
+
+std::ostream& operator <<(std::ostream &os, const Realization &r) {
+    os << r.to_string();
+    return os;
+}
+
+std::ostream& operator <<(std::ostream &os, const std::vector<Realization> &rv) {
+    int n = rv.size(), i = 0;
+    for (std::vector<Realization>::const_iterator it = rv.begin(); it != rv.end(); ++it) {
+        ++i;
+        os << it->to_string();
+        if (i != n)
+            os << ",";
+    }
+    return os;
 }

@@ -1,17 +1,17 @@
 /* tone.h
  *
- * Copyright (c) 2020 Luka Marohnić
- * 
+ * Copyright (c) 2020  Luka Marohnić
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,67 +24,71 @@
 #ifndef TONE_H
 #define TONE_H
 
+#include "chord.h"
 #include <string>
 #include <iostream>
+#include <vector>
+#include <set>
 
 class Tone {
-    int _deg;
-    int _acc;
+
+    int _lof; // position in the line-of-fifths (0 corresponds to D)
 
 public:
     Tone();
-    Tone(int p, int a); // construct the tone with degree p and accidental a
+    Tone(int lof);
     Tone(const Tone &other);
     ~Tone() { }
     Tone& operator =(const Tone &other);
     bool operator ==(const Tone &other) const;
+    bool operator !=(const Tone &other) const;
+    bool operator <(const Tone &other) const;
 
-    void set_degree(int p);
-    /* set the generic position in staff */
+    int lof_position() const;
+    /* returns the position in the line-of-fifths */
 
-    void set_accidental(int a);
-    /* shift the generic position for oct octaves */
+    int note_name() const;
+    /* returns the note name (0 - C, 1 - D, 2 - E, 3 - F, 4 - G, 5 - A, 6 - B) */
 
-    bool is_valid() const;
-    /* does this tone exist in some tonality with at most 7 sharps/flats? */
+    int pitch_class() const;
+    /* returns the pitch class (0--11) */
 
-    int degree() const;
-    /* return the degree in staff (0 - C, 1 - D, 2 - E, 3 - F, 4 - G, 5 - A, 6 - B) */
+    int accidental() const;
+    /* returns the number of accidental modifiers (sharps if positive, flats if negative, 0 means natural) */
 
-    int accidental(int key = 0) const;
-    /* return the accidental */
+    ipair interval(const Tone &other) const;
+    /* computes the interval between this tone and the other */
 
-    int pitch() const;
-    /* return the MIDI pitch */
+    Tone structural_inversion() const;
+    /* returns the structural inversion */
 
-    int pitch_base() const;
-    /* return the base MIDI pitch (between 0 and 11, inclusive) */
-
-    std::pair<int,int> interval(const Tone &other) const;
-    /* compute the interval between this tone and the other */
-
-    static std::pair<int,int> interval_abs(const Tone &a, const Tone &b);
-    /* compute the absolute interval between a and b */
-
-    static bool is_diatonic(const Tone &a, const Tone &b);
-    /* is the melodic interval between a and b diatonic? */
-
-    static bool is_chromatic(const Tone &a, const Tone &b);
-    /* is the melodic interval between a and b chromatic? */
-
-    static bool is_smooth(const Tone &a, const Tone &b);
-    /* is the melodic interval between a and b diatonic/chromatic/unison? */
+    void transpose(int steps);
+    /* shift the tone for the given number of steps on the line of fifths */
 
     std::string to_string() const;
-    /* return the string representation of the tone (use lily=true to get Lilypond code) */
+    /* returns the string representation of the tone */
 
-    /* helper routines */
-    static int mod12(int k);
-    static int mod7(int k);
+    std::string to_lily() const;
+    /* return Lilypond note code */
 
-    /* availability arrays of double sharps/flats */
-    static int double_sharps[];
-    static int double_flats[];
+    static ipair interval_abs(const Tone &a, const Tone &b);
+    /* computes the absolute interval between a and b */
+
+    static int lof_distance(const Tone &a, const Tone &b);
+    /* returns the distance between a and b on the line-of-fifths */
+
+    static int modb(int k, int b);
+    /* computes k mod b in the set {0, 1, 2, ..., b-1} */
+
+    static int modd(int k, int b);
+    /* returns the shortest distance from 0 to k mod b in the cyclic graph with vertices 0, 1, ..., b-1 */
+
+    static int pitch_class_to_lof(int pc);
+    /* return the smallest integer (by absolute value) that corresponds to pc on the line of fifths */
 };
+
+std::ostream& operator <<(std::ostream &os, const Tone &t);
+std::ostream& operator <<(std::ostream &os, const std::vector<Tone> &tv);
+std::ostream& operator <<(std::ostream &os, const std::set<Tone> &ts);
 
 #endif // TONE_H
