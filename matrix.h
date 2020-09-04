@@ -9,19 +9,20 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef MATRIX_H
 #define MATRIX_H
 
 #include <vector>
+#include <ostream>
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_linalg.h>
 
@@ -72,11 +73,11 @@ public:
     std::vector<std::pair<double,double> > eigenvalues() const;
     /* returns the eigenvalues of this matrix as a vector of pairs e=(x,y) where x=Re(e) and y=Im(e), using GSL */
 
-    void print() const;
-    /* outputs the matrix on stdout */
-
     static Matrix identity(int n);
     /* returns the identity matrix of order n */
 };
+
+std::ostream& operator <<(std::ostream &os, const Matrix &m);
+/* write matrix (columns are separated by tabulators and rows by newlines) to the output stream os */
 
 #endif // MATRIX_H

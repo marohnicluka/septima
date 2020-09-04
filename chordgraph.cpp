@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "chordgraph.h"
@@ -24,8 +24,8 @@
 #include <math.h>
 
 ChordGraph::ChordGraph(const std::vector<Chord> &chords, int k, const Domain &sup, PreparationScheme p, bool aug, bool use_labels,
-                       bool is_weighted, bool dot_tex, bool verbose) :
-    Digraph(is_weighted, dot_tex, verbose)
+                       bool is_weighted, bool dot_tex) :
+    Digraph(is_weighted, dot_tex)
 {
     int i, j;
     _support = sup;
@@ -84,11 +84,11 @@ const Chord &ChordGraph::vertex2chord(int i) const {
     return chord_map.at(i);
 }
 
-bool ChordGraph::pitch_spelling(const char *prog[], int len, int &z0, double spread_weight, double vl_weight, double aug_weight, pitchSpelling &ps) const {
+bool ChordGraph::best_voicing(const std::vector<Chord> &seq, int &z0, double spread_weight, double vl_weight, double aug_weight, voicing &v) const {
     ivector walk;
-    for (int i = 0; i < len; ++i) {
-        int v = find_vertex_by_name(prog[i]);
-        if (v == 0 || (i > 0 && arc(walk.back(), v) == NULL))
+    for (std::vector<Chord>::const_iterator it = seq.begin(); it != seq.end(); ++it) {
+        int v = find_vertex_by_chord(*it);
+        if (v == 0 || (it != seq.begin() && arc(walk.back(), v) == NULL))
             return false;
         walk.push_back(v);
     }
@@ -96,15 +96,15 @@ bool ChordGraph::pitch_spelling(const char *prog[], int len, int &z0, double spr
     wgh.push_back(spread_weight);
     wgh.push_back(vl_weight);
     wgh.push_back(aug_weight);
-    z0 = TransitionNetwork::optimal_pitch_spelling(*this, walk, wgh, ps);
+    z0 = TransitionNetwork::optimal_voicing(*this, walk, wgh, v);
     return true;
 }
 
-bool ChordGraph::best_pitch_spellings(const char *prog[], int len, double spread_weight, double vl_weight, double aug_weight, std::set<pitchSpelling> &ps) const {
+bool ChordGraph::best_voicings(const std::vector<Chord> &seq, double spread_weight, double vl_weight, double aug_weight, std::set<voicing> &vs) const {
     ivector walk;
-    for (int i = 0; i < len; ++i) {
-        int v = find_vertex_by_name(prog[i]);
-        if (v == 0 || (i > 0 && arc(walk.back(), v) == NULL))
+    for (std::vector<Chord>::const_iterator it = seq.begin(); it != seq.end(); ++it) {
+        int v = find_vertex_by_chord(*it);
+        if (v == 0 || (it != seq.begin() && arc(walk.back(), v) == NULL))
             return false;
         walk.push_back(v);
     }
@@ -112,7 +112,7 @@ bool ChordGraph::best_pitch_spellings(const char *prog[], int len, double spread
     wgh.push_back(spread_weight);
     wgh.push_back(vl_weight);
     wgh.push_back(aug_weight);
-    ps = TransitionNetwork::all_optimal_pitch_spellings(*this, walk, wgh);
+    vs = TransitionNetwork::all_optimal_voicings(*this, walk, wgh);
     return true;
 }
 

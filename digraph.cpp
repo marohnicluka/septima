@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "digraph.h"
@@ -30,7 +30,7 @@
 #define adata(a) ((a_data*)(a->data))
 #define rdata(a) ((r_data*)(a->data))
 
-Digraph::Digraph(bool is_weighted, bool dot_tex, bool verbose) {
+Digraph::Digraph(bool is_weighted, bool dot_tex) {
     _is_weighted = is_weighted;
     _dot_tex = dot_tex;
     assert(sizeof(v_data) <= 256 && sizeof(a_data) <= 256);
@@ -38,7 +38,6 @@ Digraph::Digraph(bool is_weighted, bool dot_tex, bool verbose) {
     glp_create_v_index(G);
     P = NULL;
     _num_arcs = 0;
-    _verbose = verbose;
 }
 
 Digraph::~Digraph() {
@@ -85,11 +84,8 @@ Digraph::v_data *Digraph::vertex_data(int i) const {
 
 glp_arc *Digraph::add_arc(int i, int j, double w) {
     glp_arc *a = arc(i, j);
-    if (a != NULL) {
-        if (_verbose)
-            std::cout << " Warning: there is already an arc from vertex " << i << " to vertex " << j << std::endl;
+    if (a != NULL)
         return a;
-    }
     a = glp_add_arc(G, i, j);
     adata(a)->weight = w;
     ++_num_arcs;
@@ -112,6 +108,18 @@ Digraph::a_data *Digraph::arc_data(int i, int j) const {
 
 Digraph::a_data *Digraph::arc_data(glp_arc *a) const {
     return a == NULL ? NULL : adata(a);
+}
+
+void Digraph::set_weight(int i, int j, double w) const {
+    assert(_is_weighted);
+    if (arc(i, j) != NULL)
+        arc_data(i, j)->weight = w;
+}
+
+void Digraph::set_weight(glp_arc *a, double w) const {
+    assert(_is_weighted);
+    if (a != NULL)
+        arc_data(a)->weight = w;
 }
 
 int Digraph::in_degree(int i) const {
@@ -175,6 +183,51 @@ bool Digraph::bfs(int src, int dest, ivector &path) {
         }
     }
     return false;
+}
+
+glp_vertex *Digraph::store_path(const ivector &path, glp_vertex *root) {
+    glp_vertex *v = root;
+    glp_arc *a;
+    int i, j, n = path.size();
+    for (i = 1; i < n; ++i) {
+        a = v->out;
+        while (a != NULL) {
+            if (rdata(a)->i == path[i]) break;
+            a = a->t_next;
+        }
+        if (a != NULL) {
+            v = a->head;
+            continue;
+        }
+        j = glp_add_vertices(P, 1);
+        a = glp_add_arc(P, v->i, j);
+        rdata(a)->i = path[i];
+        rdata(a)->selected = false;
+        v = P->v[j];
+    }
+    return v;
+}
+
+void Digraph::select_path(glp_vertex *top) {
+    glp_arc *a;
+    glp_vertex *v = top;
+    while ((a = v->in) != NULL) {
+        if (rdata(a)->selected) break;
+        rdata(a)->selected = true;
+        v = a->tail;
+    }
+}
+
+void Digraph::restore_path(glp_vertex *top, int src, ivector &path) {
+    glp_arc *a;
+    glp_vertex *v = top;
+    path.clear();
+    while ((a = v->in) != NULL) {
+        path.push_back(rdata(a)->i);
+        v = a->tail;
+    }
+    path.push_back(src);
+    std::reverse(path.begin(), path.end());
 }
 
 void Digraph::yen(int src, int dest, int K, double lb, double ub, std::vector<ivector> &paths) {
@@ -349,51 +402,6 @@ void Digraph::enable_all_arcs(bool yes) {
     }
 }
 
-glp_vertex *Digraph::store_path(const ivector &path, glp_vertex *root) {
-    glp_vertex *v = root;
-    glp_arc *a;
-    int i, j, n = path.size();
-    for (i = 1; i < n; ++i) {
-        a = v->out;
-        while (a != NULL) {
-            if (rdata(a)->i == path[i]) break;
-            a = a->t_next;
-        }
-        if (a != NULL) {
-            v = a->head;
-            continue;
-        }
-        j = glp_add_vertices(P, 1);
-        a = glp_add_arc(P, v->i, j);
-        rdata(a)->i = path[i];
-        rdata(a)->selected = false;
-        v = P->v[j];
-    }
-    return v;
-}
-
-void Digraph::select_path(glp_vertex *top) {
-    glp_arc *a;
-    glp_vertex *v = top;
-    while ((a = v->in) != NULL) {
-        if (rdata(a)->selected) break;
-        rdata(a)->selected = true;
-        v = a->tail;
-    }
-}
-
-void Digraph::restore_path(glp_vertex *top, int src, ivector &path) {
-    glp_arc *a;
-    glp_vertex *v = top;
-    path.clear();
-    while ((a = v->in) != NULL) {
-        path.push_back(rdata(a)->i);
-        v = a->tail;
-    }
-    path.push_back(src);
-    std::reverse(path.begin(), path.end());
-}
-
 Matrix Digraph::adjacency_matrix() const {
     Matrix ret(G->nv);
     glp_vertex *v;
@@ -410,12 +418,10 @@ Matrix Digraph::adjacency_matrix() const {
     return ret;
 }
 
-bool Digraph::export_dot(const char *filename) const {
-    std::ofstream dot;
-    dot.open(filename);
-    if (!dot.is_open())
-        return false;
-    dot << "digraph {\n";
+void Digraph::output_dot(std::ostream &dot, bool undirected) const {
+    if (!undirected)
+        dot << "di";
+    dot << "graph {\n";
     /* output vertices */
     for (int i = 1; i <= G->nv; ++i) {
         dot << "  v" << i;
@@ -427,11 +433,11 @@ bool Digraph::export_dot(const char *filename) const {
     /* output arcs */
     for (int i = 1; i <= G->nv; ++i) {
         for (int j = 1; j <= G->nv; ++j) {
-            if (i == j)
+            if (i == j || (undirected && j < i))
                 continue;
             glp_arc *a = arc(i, j);
             if (a != NULL) {
-                dot << "  v" << i << " -> v" << j;
+                dot << "  v" << i << (undirected ? " -- v" : " -> v") << j;
                 if (_is_weighted)
                     dot << " [weight=" << adata(a)->weight << "]";
                 dot << ";\n";
@@ -439,6 +445,18 @@ bool Digraph::export_dot(const char *filename) const {
         }
     }
     dot << "}\n";
+}
+
+bool Digraph::export_dot(const char *filename, bool undirected) const {
+    std::ofstream dot;
+    if (std::string(filename) == "-") {
+        output_dot(std::cout, undirected);
+        return true;
+    }
+    dot.open(filename);
+    if (!dot.is_open())
+        return false;
+    output_dot(dot, undirected);
     dot.close();
     return true;
 }

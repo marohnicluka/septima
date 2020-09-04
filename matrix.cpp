@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "matrix.h"
@@ -174,14 +174,15 @@ std::vector<std::pair<double,double> > Matrix::eigenvalues() const {
     return ret;
 }
 
-void Matrix::print() const {
-    int s = _size;
+std::ostream& operator <<(std::ostream &os, const Matrix &m) {
+    int s = m.size();
     for (int i = 1; i <= s; ++i) {
         for (int j = 1; j <= s; ++j) {
-            std::cout << element(i, j);
+            os << m.element(i, j);
             if (j < s)
-                std::cout << "\t";
+                os << "\t";
         }
-        std::cout << std::endl;
+        os << std::endl;
     }
+    return os;
 }

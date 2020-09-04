@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef TRANSITION_H
@@ -26,10 +26,10 @@
 #include <algorithm>
 
 enum PreparationScheme {
-    NONE = 0,
-    ACOUSTIC = 1,
-    ACOUSTIC_NO_DOMINANT = 2,
-    GENERIC = 3
+    NO_PREPARATION = 0,
+    PREPARE_ACOUSTIC = 1,
+    PREPARE_ACOUSTIC_NO_DOMINANT = 2,
+    PREPARE_GENERIC = 3
 };
 
 class Transition {
@@ -164,7 +164,7 @@ public:
     /* shift both realizations for d steps on the line of fifths */
 
     static std::set<Transition> elementary_transitions(const Chord &c1, const Chord &c2, int k, const Domain &dom, PreparationScheme p, bool aug);
-    /* returns the list of parsimonious transitions from c1 to c2 in the domain dom on the line-of-fifths
+    /* returns the set of elementary transitions from c1 to c2 in the domain dom on the line-of-fifths
      *  - k is the class index
      *  - p is the preparation scheme
      *  - augmented-sixth realizations are used iff aug = true
@@ -190,6 +190,9 @@ public:
 };
 
 std::ostream& operator <<(std::ostream &os, const Transition &t);
+/* write transition t to the output stream os */
+
 std::ostream& operator <<(std::ostream &os, const std::vector<Transition> &tv);
+/* write newline-separated list of transitions tv to the output stream os */
 
 #endif // TRANSITION_H

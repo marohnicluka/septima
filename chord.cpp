@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "chord.h"
@@ -23,6 +23,11 @@
 #include <algorithm>
 #include <sstream>
 #include <assert.h>
+#include <cstring>
+
+const char* Chord::symbols[] = {
+    "d7", "hdim7", "m7", "maj7", "dim7", "Ger6+", "TC"
+};
 
 Chord::Chord() {
     _root = 0;
@@ -31,7 +36,27 @@ Chord::Chord() {
 
 Chord::Chord(int r, int t) {
     _root = Tone::modb(r, 12);
-    _type = t % 5;
+    _type = t;
+}
+
+Chord::Chord(const char *symbol) {
+    int pos = 0, t = 0, len = strlen(symbol);
+    char *s = new char[len+1];
+    strcpy(s, symbol);
+    for (; pos < len && s[pos] != ':'; ++pos);
+    if (pos == len) {
+        _root = _type = -1;
+    } else {
+        s[pos] = '\0';
+        _root = Tone::modb(atoi(symbol), 12);
+        if (_root == 0 && (strlen(s) == 0 || strlen(s) > 1 || s[0] != '0'))
+            _root = -1;
+        else {
+            for (; t < 5 && strcmp(s+pos+1, symbols[t]); ++t);
+            _type = t;
+        }
+    }
+    delete[] s;
 }
 
 Chord::Chord(const Chord &other) {
@@ -61,6 +86,10 @@ int Chord::type() const {
     return _type;
 }
 
+bool Chord::is_valid() const {
+    return 0 <= _type && _type < 5 && 0 <= _root && _root < 12;
+}
+
 void Chord::set_root(int r) {
     _root = Tone::modb(r, 12);
 }
@@ -85,13 +114,9 @@ int Chord::seventh() const {
     return Tone::modb(_root + structure[_type % 5][2], 12);
 }
 
-const char* Chord::type_string[] = {
-    "d7", "hdim7", "m7", "maj7", "dim7", "Ger6+", "TC"
-};
-
 std::string Chord::to_string() const {
     char res[8];
-    sprintf(res, "%d:%s", _root, type_string[_type]);
+    sprintf(res, "%d:%s", _root, symbols[_type]);
     return std::string(res);
 }
 
@@ -105,19 +130,19 @@ std::string Chord::to_tex() const {
         ss << (acc > 0 ? "\\sharp" : "\\flat");
     }
     switch (_type) {
-    case DOMINANT:
+    case DOMINANT_SEVENTH:
         ss << "^7";
         break;
-    case HALF_DIMINISHED:
+    case HALF_DIMINISHED_SEVENTH:
         ss << "^\\text{\\o}";
         break;
-    case MINOR:
+    case MINOR_SEVENTH:
         ss << "\\mathrm{m}^7";
         break;
-    case MAJOR:
+    case MAJOR_SEVENTH:
         ss << "^\\triangle ";
         break;
-    case DIMINISHED:
+    case DIMINISHED_SEVENTH:
         ss << "^{\\mathrm{o}7}";
         break;
     default:
@@ -138,13 +163,13 @@ std::set<int> Chord::pitch_class_set() const {
 Chord Chord::structural_inversion() const {
     int r = Tone::modb(4 - this->root(), 12);
     int t = this->type();
-    if (t == DOMINANT)
-        t = HALF_DIMINISHED;
-    else if (t == DOMINANT)
-        t = HALF_DIMINISHED;
+    if (t == DOMINANT_SEVENTH)
+        t = HALF_DIMINISHED_SEVENTH;
+    else if (t == DOMINANT_SEVENTH)
+        t = HALF_DIMINISHED_SEVENTH;
     else if (t == GERMAN_SIXTH)
-        t = TRISTAN;
-    else if (t == TRISTAN)
+        t = TRISTAN_CHORD;
+    else if (t == TRISTAN_CHORD)
         t = GERMAN_SIXTH;
     return Chord(r, t);
 }
@@ -221,6 +246,69 @@ int Chord::vl_efficiency_metric(const Chord &other) const {
     return minw;
 }
 
+std::vector<Chord> Chord::make_sequence_from_symbols(const char* symbols[], int len) {
+    std::vector<Chord> seq;
+    for (int i = 0; i < len; ++i) {
+        seq.push_back(Chord(symbols[i]));
+    }
+    return seq;
+}
+
+std::vector<Chord> Chord::dominant_seventh_chords() {
+    std::vector<Chord> lst;
+    for (int i = 0; i < 12; ++i) {
+        lst.push_back(Chord(i, DOMINANT_SEVENTH));
+    }
+    return lst;
+}
+
+std::vector<Chord> Chord::half_diminished_seventh_chords() {
+    std::vector<Chord> lst;
+    for (int i = 0; i < 12; ++i) {
+        lst.push_back(Chord(i, HALF_DIMINISHED_SEVENTH));
+    }
+    return lst;
+}
+
+std::vector<Chord> Chord::minor_seventh_chords() {
+    std::vector<Chord> lst;
+    for (int i = 0; i < 12; ++i) {
+        lst.push_back(Chord(i, MINOR_SEVENTH));
+    }
+    return lst;
+}
+
+std::vector<Chord> Chord::major_seventh_chords() {
+    std::vector<Chord> lst;
+    for (int i = 0; i < 12; ++i) {
+        lst.push_back(Chord(i, MAJOR_SEVENTH));
+    }
+    return lst;
+}
+
+std::vector<Chord> Chord::diminished_seventh_chords() {
+    std::vector<Chord> lst;
+    for (int i = 0; i < 3; ++i) {
+        lst.push_back(Chord(i, DIMINISHED_SEVENTH));
+    }
+    return lst;
+}
+
+std::vector<Chord> Chord::all_seventh_chords() {
+    std::vector<Chord> lst;
+    std::vector<Chord> dom = dominant_seventh_chords();
+    std::vector<Chord> hdim = half_diminished_seventh_chords();
+    std::vector<Chord> min = minor_seventh_chords();
+    std::vector<Chord> maj = major_seventh_chords();
+    std::vector<Chord> dim = diminished_seventh_chords();
+    lst.insert(lst.end(), dom.begin(), dom.end());
+    lst.insert(lst.end(), hdim.begin(), hdim.end());
+    lst.insert(lst.end(), min.begin(), min.end());
+    lst.insert(lst.end(), maj.begin(), maj.end());
+    lst.insert(lst.end(), dim.begin(), dim.end());
+    return lst;
+}
+
 std::ostream& operator <<(std::ostream &os, const Chord &c) {
     os << c.to_string();
     return os;
@@ -228,10 +316,17 @@ std::ostream& operator <<(std::ostream &os, const Chord &c) {
 
 std::ostream& operator <<(std::ostream &os, const std::vector<Chord> &cv) {
     int n = cv.size();
+    os << "[";
     for (int i = 0; i < n; ++i) {
         os << cv.at(i).to_string();
         if (i != n - 1)
             os << ",";
     }
+    os << "]";
+    return os;
+}
+
+std::ostream& operator <<(std::ostream &os, const ipair &ip) {
+    os << "(" << ip.first << "," << ip.second << ")";
     return os;
 }

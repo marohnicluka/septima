@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef DOMAIN_H
@@ -25,6 +25,8 @@
 #include <set>
 
 class Domain : public std::set<Tone> {
+
+    static bool str_to_int(const char *str, int &res);
 
 public:
     void insert_range(int lb, int ub);
@@ -44,6 +46,12 @@ public:
 
     static Domain usual();
     /* returns the domain from -15 (Gbb) to 15 (A##) on the line of fifths */
+
+    static Domain parse(char *spec);
+    /* parses the string spec and returns the corresponding domain */
 };
+
+std::ostream& operator <<(std::ostream &os, const Domain &d);
+/* write domain as a set to the output stream os */
 
 #endif // DOMAIN_H

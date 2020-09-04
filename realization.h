@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef REALIZATION_H
@@ -105,6 +105,9 @@ public:
 };
 
 std::ostream& operator <<(std::ostream &os, const Realization &r);
+/* write realization r to the output stream os */
+
 std::ostream& operator <<(std::ostream &os, const std::vector<Realization> &rv);
+/* write comma-separated list of reallizations rv to the output stream os */
 
 #endif // REALIZATION_H

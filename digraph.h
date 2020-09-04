@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef DIGRAPH_H
@@ -54,21 +54,24 @@ private:
     glp_graph *G;
     glp_graph *P;
     int _num_arcs;
-    bool _verbose;
     bool _dot_tex;
     bool _is_weighted;
     std::map<int,std::string> _vlabels;
+
     glp_vertex *store_path(const ivector &path, glp_vertex *root);
+
     static void select_path(glp_vertex *top);
+
     static void restore_path(glp_vertex *top, int src, ivector &path);
 
+    void output_dot(std::ostream &dot, bool undirected) const;
+
 public:
-    Digraph(bool is_weighted, bool dot_tex, bool verbose);
+    Digraph(bool is_weighted, bool dot_tex);
     /* constructor
      *  - is_weighted should be set to true to use arc weights
      *  - if use_vertex_labels = true, then vertices are searchable by string labels
      *  - if dot_tex = true, then dot exports vertex labels as texlbl for processing with dot2tex
-     *  - if verbose = true, then messages are printed to standard output
      */
 
     ~Digraph();
@@ -110,6 +113,12 @@ public:
     a_data *arc_data(glp_arc *a) const;
     /* returns the data for arc a */
 
+    void set_weight(int i, int j, double w) const;
+    /* sets weight w to the arc from i-th to j-th vertex (the graph must be weighted) */
+
+    void set_weight(glp_arc *a, double w) const;
+    /* sets weight w to arc a (the graph must be weighted) */
+
     int in_degree(int i) const;
     /* returns the in-degree for the i-th vertex */
 
@@ -145,10 +154,11 @@ public:
     Matrix adjacency_matrix() const;
     /* returns the adjacency matrix (of this network) */
 
-    bool export_dot(const char* filename) const;
-    /* outputs the chord graph in dot format to file 'filename' */
+    bool export_dot(const char* filename, bool undirected = false) const;
+    /* outputs the chord graph in dot format to file 'filename' (if filename is '-' then outputs to stdout) */
 };
 
 std::ostream& operator <<(std::ostream &os, const ivector &v);
+/* write comma-separated list of integers v to the output stream os */
 
 #endif // DIGRAPH_H

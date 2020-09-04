@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef TONE_H
@@ -85,7 +85,12 @@ public:
 };
 
 std::ostream& operator <<(std::ostream &os, const Tone &t);
+/* write tone t to the output stream os */
+
 std::ostream& operator <<(std::ostream &os, const std::vector<Tone> &tv);
+/* write comma-separated list of tones tv to the output stream os */
+
 std::ostream& operator <<(std::ostream &os, const std::set<Tone> &ts);
+/* write set of tones ts to the output stream os */
 
 #endif // TONE_H

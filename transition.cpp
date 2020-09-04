@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "transition.h"
@@ -458,31 +458,29 @@ std::set<Transition> Transition::elementary_transitions(const Chord &c1, const C
     std::vector<Realization> br2 = Realization::tonal_realizations(c2, dom, aug);
     std::set<Transition> ret;
     std::vector<int> f(4, -1);
-    int s, rv1, rv2, sv;
-    bool ok;
+    int rv1, rv2, sv, i, j, s;
     for (std::vector<Realization>::const_iterator it = br1.begin(); it != br1.end(); ++it) {
         rv1 = it->generic_root_voice();
         for (std::vector<Realization>::const_iterator jt = br2.begin(); jt != br2.end(); ++jt) {
             rv2 = jt->generic_root_voice();
-            for (int i = 0; i < 24; ++i) {
+            for (i = 0; i < 24; ++i) {
                 s = 0;
-                ok = true;
-                for (int j = 0; ok && j < 4; ++j) {
+                for (j = 0; j < 4; ++j) {
                     f[j] = sym4[i][j];
                     if (Tone::lof_distance(it->tone(j), jt->tone(f[j])) > k)
-                        ok = false;
+                        break;
                     else s += Tone::modd(3 * Tone::lof_distance(it->tone(j), jt->tone(f[j])), 7);
                 }
-                if (ok && s == Tone::modd(2 * Tone::lof_distance(it->tone(rv1), jt->tone(rv2)), 7)) {
+                if (j == 4 && s == Tone::modd(2 * Tone::lof_distance(it->tone(rv1), jt->tone(rv2)), 7)) {
                     Realization r1(*it), r2(*jt);
                     r2.arrange(f);
-                    if (p == GENERIC) {
+                    if (p == PREPARE_GENERIC) {
                         sv = r2.generic_seventh_voice();
                         if (r1.tone(sv) == r2.tone(sv))
                             ret.insert(Transition(r1, r2));
                     } else {
                         sv = r2.acoustic_seventh_voice();
-                        if (p == NONE || sv < 0 || (p == ACOUSTIC_NO_DOMINANT && c2.type() == DOMINANT) ||
+                        if (p == NO_PREPARATION || sv < 0 || (p == PREPARE_ACOUSTIC_NO_DOMINANT && c2.type() == DOMINANT_SEVENTH) ||
                                 r1.tone(sv).pitch_class() == r2.tone(sv).pitch_class())
                             ret.insert(Transition(r1, r2));
                     }
@@ -540,7 +538,7 @@ std::vector<Transition> Transition::elementary_types(const std::vector<Chord> &c
             for (kt = cl.begin(); kt != cl.end(); ++kt) {
                 bool found = false;
                 for (st = cls.begin(); st != cls.end(); ++st) {
-                    if (kt->is_structurally_equal(*st) || (p == NONE && kt->is_structurally_equal(st->retrograde()))) {
+                    if (kt->is_structurally_equal(*st) || (p == NO_PREPARATION && kt->is_structurally_equal(st->retrograde()))) {
                         found = true;
                         break;
                     }
@@ -608,12 +606,8 @@ std::ostream& operator <<(std::ostream &os, const Transition &t) {
 }
 
 std::ostream& operator <<(std::ostream &os, const std::vector<Transition> &tv) {
-    int n = tv.size(), i = 0;
     for (std::vector<Transition>::const_iterator it = tv.begin(); it != tv.end(); ++it) {
-        ++i;
-        os << it->to_string();
-        if (i != n)
-            os << std::endl;
+        os << it->to_string() << std::endl;
     }
     return os;
 }

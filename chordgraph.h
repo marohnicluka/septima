@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef CHORDGRAPH_H
@@ -26,7 +26,7 @@
 #include "digraph.h"
 
 typedef std::map<std::pair<int,int>,std::vector<ivector> > pathmap;
-typedef std::vector<std::pair<Realization, bool> > pitchSpelling;
+typedef std::vector<std::pair<Realization, bool> > voicing;
 
 class ChordGraph : public Digraph {
 
@@ -53,7 +53,7 @@ class ChordGraph : public Digraph {
 
 public:
     ChordGraph(const std::vector<Chord> &chords, int k, const Domain &sup, PreparationScheme p, bool aug, bool use_labels,
-               bool is_weighted = false, bool dot_tex = false, bool verbose = false);
+               bool is_weighted = false, bool dot_tex = false);
     /* constructs the chord graph using chords as vertices
      *  - if a chord does not have realizations in sup, then it is not added to the graph
      *  - k is the class index
@@ -81,15 +81,15 @@ public:
     const Chord &vertex2chord(int i) const;
     /* returns the reference to chord represented by the i-th vertex */
 
-    bool pitch_spelling(const char *prog[], int len, int &z0, double spread_weight, double vl_weight, double aug_weight, pitchSpelling &ps) const;
-    /* finds the pitch spelling for progression prog of seventh chords, given as a list of names
+    bool best_voicing(const std::vector<Chord> &seq, int &z0, double spread_weight, double vl_weight, double aug_weight, voicing &v) const;
+    /* finds an optimal voicing for chord sequence seq of seventh chords, given as a list of names
      *  - returns true iff prog is a walk in this graph
      *  - z0 is the gravity center on the line of fifths
      *  - spread_weight, vl_weight and aug_weight are weight parameters for xi, eta and zeta, respectively
      */
 
-    bool best_pitch_spellings(const char *prog[], int len, double spread_weight, double vl_weight, double aug_weight, std::set<pitchSpelling> &ps) const;
-    /* finds all optimal pitch spellings for prog with respect to the given weight parameters
+    bool best_voicings(const std::vector<Chord> &seq, double spread_weight, double vl_weight, double aug_weight, std::set<voicing> &vs) const;
+    /* finds all optimal voicings for chord sequence seq with respect to the given weight parameters
      *  - returns true iff prog is a walk in this graph
      */
 

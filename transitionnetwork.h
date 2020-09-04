@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef TRANSITIONNETWORK_H
@@ -36,12 +36,8 @@ class TransitionNetwork : public Digraph {
     std::map<glp_arc*,bool> cues_map;
     std::map<glp_arc*,ivector> phi_map;
 
-    static double cog_offset_factor(int z);
-    /* returns 1+z^2/50 which is the path weight factor depending on the center of gravity z */
-
 public:
-    TransitionNetwork(const ChordGraph &cg, const ivector &walk, const Realization &r, const std::vector<double> &wgh, int z,
-                      bool verbose = false);
+    TransitionNetwork(const ChordGraph &cg, const ivector &walk, const Realization &r, const std::vector<double> &wgh, int z);
     /* constructs the transition network for walk in cg with center of gravity z and weights wgh */
 
     const ivector &sources() const;
@@ -62,26 +58,26 @@ public:
     std::vector<ivector> best_paths(double &theta);
     /* returns all cheapest paths from source to sink */
 
-    pitchSpelling realize_path(const ivector &path);
+    voicing realize_path(const ivector &path);
     /* returns the pitch spelling corresponding to path */
 
     static ivector compose(const ivector &f1, const ivector &f2);
     /* returns the composition of two permutations f1 and f2 */
 
-    static int optimal_pitch_spelling(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, pitchSpelling &ps);
-    /* finds an optimal pitch spelling ps for walk in cg and returns its gravity center on the line of fifths */
+    static int optimal_voicing(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, voicing &v);
+    /* finds an optimal voicing v for walk in cg and returns its gravity center on the line of fifths */
 
-    static std::set<pitchSpelling> all_optimal_pitch_spellings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh);
-    /* returns all optimal pitch spellings for walk in cg */
+    static std::set<voicing> all_optimal_voicings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh);
+    /* returns all optimal voicings for walk in cg */
 
-    static void arrange_voices(pitchSpelling &ps);
+    static void arrange_voices(voicing &v);
     /* permute voices in chain so that the number of parallel fifths is minimal */
 
-    static bool are_pitch_spellings_equivalent(const pitchSpelling &ps1, const pitchSpelling &ps2);
-    /* returns true iff ps1 and ps2 are equal up to a shift on the line of fifths */
+    static bool are_voicings_equivalent(const voicing &v1, const voicing &v2);
+    /* returns true iff voicings v1 and v2 are equal up to a shift on the line of fifths */
 };
 
-std::ostream& operator <<(std::ostream &os, const pitchSpelling &ps);
-/* feed pitch spelling ps to the output stream os */
+std::ostream& operator <<(std::ostream &os, const voicing &v);
+/* write voicing v (realizations are separated by newlines) to the output stream os */
 
 #endif // TRANSITIONNETWORK_H

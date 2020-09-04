@@ -9,22 +9,21 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "transitionnetwork.h"
 #include <assert.h>
 #include <float.h>
 
-TransitionNetwork::TransitionNetwork(const ChordGraph &cg, const ivector &walk, const Realization &r, const std::vector<double> &wgh, int z,
-                                     bool verbose) :
-    Digraph(true, false, verbose)
+TransitionNetwork::TransitionNetwork(const ChordGraph &cg, const ivector &walk, const Realization &r, const std::vector<double> &wgh, int z) :
+    Digraph(true, false)
 {
     X0 = r;
     nl = walk.size() - 1;
@@ -140,12 +139,12 @@ std::vector<ivector> TransitionNetwork::best_paths(double &theta) {
     return ret;
 }
 
-pitchSpelling TransitionNetwork::realize_path(const ivector &path) {
+voicing TransitionNetwork::realize_path(const ivector &path) {
     glp_vertex *v, *w;
     glp_arc *a;
     int n = path.size(), mc, tcn;
     ivector f(4), f0;
-    pitchSpelling ret;
+    voicing ret;
     for (int i = 0; i < n; ++i) {
         v = vertex(path[i]);
         const Transition &t = *(transition_map.at(v->i));
@@ -189,11 +188,7 @@ ivector TransitionNetwork::compose(const ivector &f1, const ivector &f2) {
     return tmp;
 }
 
-double TransitionNetwork::cog_offset_factor(int z) {
-    return 1.0; // + (z * z) / 50.0;
-}
-
-int TransitionNetwork::optimal_pitch_spelling(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, pitchSpelling &ps) {
+int TransitionNetwork::optimal_voicing(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, voicing &v) {
     const Chord &c0 = cg.vertex2chord(walk.front());
     Domain dom = cg.support();
     double w, min_w = DBL_MAX;
@@ -203,28 +198,28 @@ int TransitionNetwork::optimal_pitch_spelling(const ChordGraph &cg, const ivecto
         for (int z = dom.lbound(); z <= dom.ubound(); ++z) {
             TransitionNetwork tn(cg, walk, *it, wgh, z);
             ivector bp = tn.best_path();
-            w = tn.path_weight(bp) * cog_offset_factor(z);
+            w = tn.path_weight(bp);
             if (w < min_w) {
-                ps = tn.realize_path(bp);
+                v = tn.realize_path(bp);
                 min_w = w;
                 best_z = z;
             }
         }
     }
-    arrange_voices(ps);
+    arrange_voices(v);
     return best_z;
 }
 
-bool TransitionNetwork::are_pitch_spellings_equivalent(const pitchSpelling &ps1, const pitchSpelling &ps2) {
-    assert(!ps1.empty() && !ps2.empty());
-    if (ps1.size() != ps2.size())
+bool TransitionNetwork::are_voicings_equivalent(const voicing &v1, const voicing &v2) {
+    assert(!v1.empty() && !v2.empty());
+    if (v1.size() != v2.size())
         return false;
-    int n = ps1.size(), d;
+    int n = v1.size(), d;
     for (int i = 0; i < n; ++i) {
-        if (ps1.at(i).second != ps2.at(i).second)
+        if (v1.at(i).second != v2.at(i).second)
             return false;
-        const Realization &r1 = ps1.at(i).first;
-        Realization r2 = ps2.at(i).first;
+        const Realization &r1 = v1.at(i).first;
+        Realization r2 = v2.at(i).first;
         if (i == 0) {
             d = r1.tone_set().begin()->lof_position() - r2.tone_set().begin()->lof_position();
             if (d % 12)
@@ -237,38 +232,37 @@ bool TransitionNetwork::are_pitch_spellings_equivalent(const pitchSpelling &ps1,
     return true;
 }
 
-std::set<pitchSpelling> TransitionNetwork::all_optimal_pitch_spellings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh) {
+std::set<voicing> TransitionNetwork::all_optimal_voicings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh) {
     const Chord &c0 = cg.vertex2chord(walk.front());
     Domain dom = cg.support();
     double theta;
-    std::set<pitchSpelling> res;
-    std::set<std::pair<int,pitchSpelling> > best_ps;
-    std::set<std::pair<std::pair<double,int>,pitchSpelling> > all_ps;
+    std::set<voicing> res;
+    std::set<std::pair<int,voicing> > best_v;
+    std::set<std::pair<std::pair<double,int>,voicing> > all_v;
     std::vector<Realization> R = Realization::tonal_realizations(c0, dom, cg.allows_augmented_sixths());
     for (std::vector<Realization>::const_iterator it = R.begin(); it != R.end(); ++it) {
         for (int z = dom.lbound(); z <= dom.ubound(); ++z) {
             TransitionNetwork tn(cg, walk, *it, wgh, z);
             std::vector<ivector> bpv = tn.best_paths(theta);
-            theta *= cog_offset_factor(z);
             for (std::vector<ivector>::const_iterator jt = bpv.begin(); jt != bpv.end(); ++jt) {
-                all_ps.insert(std::make_pair(std::make_pair(theta, z), tn.realize_path(*jt)));
+                all_v.insert(std::make_pair(std::make_pair(theta, z), tn.realize_path(*jt)));
             }
         }
     }
-    if (!all_ps.empty()) {
-        double theta0 = all_ps.begin()->first.first;
-        for (std::set<std::pair<std::pair<double,int>,pitchSpelling> >::const_iterator it = all_ps.begin(); it != all_ps.end(); ++it) {
+    if (!all_v.empty()) {
+        double theta0 = all_v.begin()->first.first;
+        for (std::set<std::pair<std::pair<double,int>,voicing> >::const_iterator it = all_v.begin(); it != all_v.end(); ++it) {
             if (it->first.first <= theta0)
-                best_ps.insert(std::make_pair(it->first.second, it->second));
+                best_v.insert(std::make_pair(it->first.second, it->second));
         }
-        assert(!best_ps.empty());
+        assert(!best_v.empty());
         bool found;
-        std::set<std::pair<int,pitchSpelling> >::const_iterator it, jt;
+        std::set<std::pair<int,voicing> >::const_iterator it, jt;
         while (true) {
             found = false;
-            for (it = best_ps.begin(); it != best_ps.end(); ++it) {
-                for (jt = best_ps.begin(); jt != best_ps.end(); ++jt) {
-                    if (it != jt && are_pitch_spellings_equivalent(it->second, jt->second)) {
+            for (it = best_v.begin(); it != best_v.end(); ++it) {
+                for (jt = best_v.begin(); jt != best_v.end(); ++jt) {
+                    if (it != jt && are_voicings_equivalent(it->second, jt->second)) {
                         found = true;
                         break;
                     }
@@ -278,25 +272,25 @@ std::set<pitchSpelling> TransitionNetwork::all_optimal_pitch_spellings(const Cho
             }
             if (found) {
                 if (abs(it->first) < abs(jt->first))
-                    best_ps.erase(jt);
-                else best_ps.erase(it);
+                    best_v.erase(jt);
+                else best_v.erase(it);
             } else break;
         }
-        for (it = best_ps.begin(); it != best_ps.end(); ++it) {
-            pitchSpelling ps = it->second;
-            arrange_voices(ps);
-            res.insert(ps);
+        for (it = best_v.begin(); it != best_v.end(); ++it) {
+            voicing v = it->second;
+            arrange_voices(v);
+            res.insert(v);
         }
     }
     return res;
 }
 
-void TransitionNetwork::arrange_voices(pitchSpelling &ps) {
-    int len = ps.size(), cnt;
-    std::vector<std::pair<int,pitchSpelling> > ind;
+void TransitionNetwork::arrange_voices(voicing &v) {
+    int len = v.size(), cnt;
+    std::vector<std::pair<int,voicing> > ind;
     ivector F(4);
     for (int i = 0; i < 24; ++i) {
-        pitchSpelling chn = ps;
+        voicing chn = v;
         const int *f = Transition::sym4[i];
         for (int k = 0; k < 4; ++k) F[k] = f[k];
         cnt = 0;
@@ -319,11 +313,11 @@ void TransitionNetwork::arrange_voices(pitchSpelling &ps) {
     }
     std::sort(ind.begin(), ind.end());
     int min_cnt = ind.front().first, min_gs = RAND_MAX, gs, min_ss = RAND_MAX, ss;
-    for (std::vector<std::pair<int,pitchSpelling> >::const_iterator it = ind.begin(); it != ind.end(); ++it) {
+    for (std::vector<std::pair<int,voicing> >::const_iterator it = ind.begin(); it != ind.end(); ++it) {
         if (it->first > min_cnt)
             break;
         gs = ss = 0;
-        for (pitchSpelling::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
+        for (voicing::const_iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
             if (jt->second)
                 continue;
             for (int i = 0; i < 3; ++i) {
@@ -333,7 +327,7 @@ void TransitionNetwork::arrange_voices(pitchSpelling &ps) {
             }
         }
         if (gs < min_gs || (gs == min_gs && ss < min_ss)) {
-            ps = it->second;
+            v = it->second;
             min_ss = ss;
             if (gs < min_gs)
                 min_gs = gs;
@@ -341,8 +335,8 @@ void TransitionNetwork::arrange_voices(pitchSpelling &ps) {
     }
 }
 
-std::ostream& operator <<(std::ostream &os, const pitchSpelling &ps) {
-    for (pitchSpelling::const_iterator it = ps.begin(); it != ps.end(); ++it) {
+std::ostream& operator <<(std::ostream &os, const voicing &v) {
+    for (voicing::const_iterator it = v.begin(); it != v.end(); ++it) {
         if (it->second)
             os << "(";
         os << it->first;

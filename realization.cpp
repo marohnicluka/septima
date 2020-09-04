@@ -9,13 +9,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Foobar is distributed in the hope that it will be useful,
+ * Septima is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+ * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "realization.h"
@@ -70,7 +70,7 @@ bool Realization::is_enharmonically_equal(const Realization &other) const {
 
 bool Realization::is_augmented_sixth(bool tristan) const {
     int t = type();
-    return t == TRISTAN || (!tristan && t == GERMAN_SIXTH);
+    return t == TRISTAN_CHORD || (!tristan && t == GERMAN_SIXTH);
 }
 
 const Tone &Realization::tone(int i) const {
@@ -302,11 +302,13 @@ std::ostream& operator <<(std::ostream &os, const Realization &r) {
 
 std::ostream& operator <<(std::ostream &os, const std::vector<Realization> &rv) {
     int n = rv.size(), i = 0;
+    os << "[";
     for (std::vector<Realization>::const_iterator it = rv.begin(); it != rv.end(); ++it) {
         ++i;
         os << it->to_string();
         if (i != n)
             os << ",";
     }
+    os << "]";
     return os;
 }
