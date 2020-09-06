@@ -323,7 +323,7 @@ std::string Transition::to_lily(int mp, int prep, bool ch) const {
         for (int j = 0; j < abs(oct); ++j) {
             ss << (oct < 0 ? "," : "'");
         }
-        ss << (i < 3 ? " " : ">2");
+        ss << (i < 3 ? " " : ">1");
     }
     if (prep == 2)
         ss << "(";
@@ -338,7 +338,7 @@ std::string Transition::to_lily(int mp, int prep, bool ch) const {
         for (int j = 0; j < abs(oct); ++j) {
             ss << (oct < 0 ? "," : "'");
         }
-        ss << (i < 3 ? " " : ">2");
+        ss << (i < 3 ? " " : ">1");
     }
     if (prep == 2)
         ss << ")";

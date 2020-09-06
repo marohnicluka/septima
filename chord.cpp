@@ -57,6 +57,8 @@ Chord::Chord(const char *symbol) {
         }
     }
     delete[] s;
+    if (is_valid() && _type == DIMINISHED_SEVENTH)
+        _root = Tone::modb(_root, 3);
 }
 
 Chord::Chord(const Chord &other) {
