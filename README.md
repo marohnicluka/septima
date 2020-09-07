@@ -30,8 +30,8 @@ To compile the library, type `make`.
 
 To convert this file to PDF, use `grip`:
 
-> `pip install grip`
-> `grip README.md`
+> `pip install grip`  
+`grip README.md`
 
 Then click `http://localhost:xxxx/` which opens the rendering in browser. Print to file when ready.
 
