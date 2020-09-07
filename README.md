@@ -69,6 +69,7 @@ In a Linux terminal, the executable is called like this:
 - `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are *none*, *generic*, and *acoustic*. Default: *none*.
 - `-w`, `--weights` &mdash; Specify weight parameters for the voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 0.25.
 - `-ly`, `--lilypond` &mdash; Output transitions and voicings in Lilypond code.
+- `-cs`, `--chord-symbols` &mdash; Print chord symbols above realizations in Lilypond output.
 - `-q`, `--quiet` &mdash; Suppress messages.
 
 #### Entering chords
@@ -131,7 +132,7 @@ Diatonic voice leading is obtained by setting `-c` option to 5. The option `-cs`
 
 Chord graphs are output in [DOT format](https://graphviz.org/doc/info/lang.html). The computer algebra system [Giac/Xcas](https://www-fourier.ujf-grenoble.fr/~parisse/giac.html) supports importing from DOT and features an extensive package for graph theory.
 
-For example, to create the chord graph on minor seventh chords with edges corresponding to diatonic transitions, enter:
+For example, to create the chord graph on minor seventh chords with edges corresponding to diatonic relations, enter:
 
 ```
 ./septima -cg -c 5 m7 >cg.dot
@@ -177,7 +178,7 @@ The result is shown below.
 For example, to generate a voicing for the progression F&#216; &#8594; E⁷ &#8594; A&#9837;&#216; &#8594; G⁷ &#8594; D&#216; &#8594; B⁷, which appears at the beginning of Wagner's *Tristan*, enter:
 
 ```
-./septima -v -aa -w 1.0 1.75 0.2 sequences/wagner1.seq
+./septima -v -aa -w 1.0 1.75 0.2 sequences/Wagner1.seq
 ```
 
 The penalty for augmented sixths is set to 0.2, which is a bit lower than the defult 0.25. This way we obtain the Tristan chord at the beginning. The optimal voicing is output as a sequence of chord realizations.

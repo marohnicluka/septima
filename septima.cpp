@@ -1,4 +1,4 @@
-/* main.cpp
+/* septima.cpp
  *
  * Copyright (c) 2020  Luka Marohnić
  *
@@ -18,8 +18,8 @@
  * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "chordgraph.h"
-#include "transitionnetwork.h"
+#include "lib/chordgraph.h"
+#include "lib/transitionnetwork.h"
 #include <glpk.h>
 #include <assert.h>
 #include <string.h>

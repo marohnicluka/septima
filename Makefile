@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-I.
-DEPS=chord.h chordgraph.h matrix.h realization.h tone.h transition.h transitionnetwork.h digraph.h domain.h
-OBJ=main.o chord.o chordgraph.o matrix.o realization.o tone.o transition.o transitionnetwork.o digraph.o domain.o
+DEPS=lib/chord.h lib/chordgraph.h lib/matrix.h lib/realization.h lib/tone.h lib/transition.h lib/transitionnetwork.h lib/digraph.h lib/domain.h
+OBJ=septima.o lib/chord.o lib/chordgraph.o lib/matrix.o lib/realization.o lib/tone.o lib/transition.o lib/transitionnetwork.o lib/digraph.o lib/domain.o
 LIBS=-lglpk -lm -lgsl -lgslcblas
 PROGRAMS=septima
 
@@ -14,4 +14,4 @@ $(PROGRAMS): $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -f *.o *~ $(PROGRAMS) 
+	rm -f *.o lib/*.o *~ $(PROGRAMS) 
