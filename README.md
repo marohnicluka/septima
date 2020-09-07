@@ -19,6 +19,7 @@ Septima is a C++ library for investigating tonal relations between seventh chord
 ### Installation
 
 In Ubuntu, dependencies can be installed by typing:
+
 `sudo apt-get install -y build-essential libglpk-dev libgsl-dev`
 
 To compile the library, type `make`.
@@ -45,7 +46,7 @@ In a Linux terminal, the executable is called like this:
 - `-c`, `--class` &mdash; Specify upper bound for voice-leading infinity norm. Default: 7.
 - `-dg`, `--degree` &mdash; Specify degree of elementary transitions. Default: unset.
 - `-aa`, `--allow-augmented` &mdash; Allow augmented realizations. By default, German sixths and Tristan chords are disabled.
-- `-d`, `--domain` &mdash; Specify domain on the line of fifths. The default domain is {−15,−14,…,15}, which corresponds to notes from G&#119083; to A&#119082;.
+- `-d`, `--domain` &mdash; Specify domain on the line of fifths. It is entered as a comma-separated list of integers. Blocks of integers, such as e.g. 1,2,3,4,5, can be entered as 1:5. The default domain is {−15,−14,…,15}, which corresponds to notes from G&#119083; to A&#119082;.
 - `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths. Default: 0, which corresponds to the note D.
 - `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are *symbol*, *number*, and *latex*. Default: *symbol*.
 - `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are *none*, *generic*, and *acoustic*. Default: *none*.
