@@ -46,18 +46,23 @@ static void show_usage(std::string name) {
               << " -p, --preparation        Specify preparation scheme for elementary transitions\n"
               << " -w, --weights            Specify weight parameters for voicing algorithm\n"
               << " -ly,--lilypond           Output transitions and voicings in Lilypond code\n"
-              << " -q, --quiet              Disable messages"
+              << " -cs,--chord-symbols      Print chord symbols above realizations in Lilypond output\n"
+              << " -q, --quiet              Suppress messages"
               << std::endl;
 }
 
-static void output_transitions(const std::vector<Transition> &trans, PreparationScheme prep_scheme, bool lily) {
+static void output_transitions(const std::vector<Transition> &trans, PreparationScheme prep_scheme, int lily) {
     if (lily) {
-        std::cout << "\\new Staff {\n\t\\override Score.TimeSignature.stencil = ##f\n"
-                  << "\t\\time 2/1\n\t\\accidentalStyle modern\n";
+        std::cout << "\\include \"lilypond-book-preamble.ly\"\n"
+                  << "\\paper {\n\toddFooterMarkup = ##f\n\t#(include-special-characters)\n}\n"
+                  << "\\score {\n"
+                  << "\t\\new Staff {\n\t\t\\override Score.TimeSignature.stencil = ##f\n"
+                  << "\t\t\\override Score.BarNumber.stencil = ##f\n"
+                  << "\t\t\\time 2/1\n\t\\accidentalStyle modern\n";
         for (std::vector<Transition>::const_iterator it = trans.begin(); it != trans.end(); ++it) {
-            std::cout << "\t" << it->to_lily(70, prep_scheme == PREPARE_GENERIC, true) << " |\n";
+            std::cout << "\t\t" << it->to_lily(70, prep_scheme == PREPARE_GENERIC, lily == 2) << " |\n";
         }
-        std::cout << "}\n";
+        std::cout << "\t}\n\t\\layout { indent = 0\\cm }\n}\n";
     } else std::cout << trans;
 }
 
@@ -66,9 +71,9 @@ int main(int argc, char *argv[]) {
         show_usage(argv[0]);
         return 1;
     }
-    int task = 0, deg = 0, cls = 7, z = 0;
+    int task = 0, deg = 0, cls = 7, z = 0, lily = 0;
     double w1 = 1.0, w2 = 1.75, w3 = 0.25;
-    bool aug = false, verbose = true, lily = false;
+    bool aug = false, verbose = true, cs = false;
     PreparationScheme prep_scheme = NO_PREPARATION;
     std::string label_format = "symbol";
     std::string input_filename = "";
@@ -203,7 +208,9 @@ int main(int argc, char *argv[]) {
                     return 1;
                 }
             } else if (arg == "-ly" || arg == "--lilypond") {
-                lily = true;
+                lily = 1;
+            } else if (arg == "-cs" || arg == "--chord-symbols") {
+                cs = true;
             } else if (arg == "-q" || arg == "--quiet") {
                 verbose = false;
             } else { // parse chords or file
@@ -285,6 +292,8 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error: no chords found" << std::endl;
         return 1;
     }
+    if (lily && cs)
+        lily = 2;
     if (verbose && task <= 3)
         std::cerr << "Using GLPK " << glp_version() << std::endl;
     if (task == 1) { // create chord graph

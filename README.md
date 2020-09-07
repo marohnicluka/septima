@@ -22,16 +22,20 @@ Septima is a C++ library for investigating tonal relations between seventh chord
 
 In Ubuntu, dependencies can be installed by typing:
 
-> `sudo apt-get install -y build-essential libglpk-dev libgsl-dev`
+```
+sudo apt-get install -y build-essential libglpk-dev libgsl-dev
+```
 
 To compile the library, type `make`.
 
 #### Documentation
 
-To convert this file to PDF, use `grip`:
+To convert this file to PDF, use [Grip](https://pypi.org/project/grip/):
 
-> `pip install grip`  
-`grip README.md`
+```
+pip install grip
+grip README.md
+```
 
 Then click `http://localhost:xxxx/` which opens the rendering in browser. Print to file when ready.
 
@@ -43,7 +47,9 @@ After a successful compilation, executable `septima` will appear in the installa
 
 In a Linux terminal, the executable is called like this:
 
-> `./septima <task> [<option(s)>] CHORDS or FILE`
+```
+./septima <task> [<option(s)>] CHORDS or FILE
+```
 
 #### Tasks
 - `-h`, `--help` &mdash; Show this help message.
@@ -64,3 +70,128 @@ In a Linux terminal, the executable is called like this:
 - `-w`, `--weights` &mdash; Specify weight parameters for the voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 0.25.
 - `-ly`, `--lilypond` &mdash; Output transitions and voicings in Lilypond code.
 - `-q`, `--quiet` &mdash; Suppress messages.
+
+#### Entering chords
+
+Chords are entered using symbols in form `<root>:<quality>`. Root is one of the integers 0,1,…,11, which represent pitch classes. Quality is either `d7` (dominant seventh), `hdim7` (half-diminished seventh), `m7` (minor seventh), `maj7` (major seventh), or `dim7` (diminished seventh). Optionally, root can be left unspecified (in that case the colon is also not entered), in which case all seventh chords of the given quality are generated. For example, `dim7` is equivalent to `0:dim7 1:dim7 2:dim7` (there are 3 diminished seventh chords in total).
+
+Septima can also read chords from a file. Chords are entered using the same syntax as above and they are separated by either spaces, tabs, newlines, commas, or semicolons. These delimiters may be combined.
+
+## Examples
+
+### Transitions
+
+#### Generating elementary transitions between two seventh chords
+
+In this example we generate elementary transitions between the dominant seventh chord on C (C⁷) and the diminished seventh chord on B (B⁰⁷). Enter:
+
+```
+./septima -t -aa -ly 0:d7 11:dim7 >out.ly
+```
+
+This will output all transitions (including those with augmented sixths, since option `-aa` is used) in Lilypond format to the file `out.ly`. 
+
+To generate a PNG image ([Lilypond](https://www.lilypond.org) has to be installed on your system), enter:
+
+```
+lilypond -dbackend=eps -dresolution=600 --png out.ly
+rm out-*
+```
+
+The following output (`out.png`) is obtained:
+
+![Trans_C7-Bdim7](images/trans_C7-Bdim7.png)
+
+#### Generating all structural classes of transitions between chords in the given set
+
+For the given set of seventh chords, all possible elementary transitions are generated and split into structural-equivalence classes.
+Each class is represented by the transition which is closest to the tonal center *z*. For example, we generate all classes of transitions between dominant seventh chords by typing:
+
+```
+./septima -tc -aa -ly d7 >out.ly
+```
+
+After converting `out.ly` to PNG using Lilypond, we obtain:
+
+![Trans_d7-d7](images/trans_d7-d7.png)
+
+We conclude that there are six structurally different ways to connect two dominant seventh chords using diatonic/chromatic voice leading. In the second transition, the destination chord is spelled as German sixth.
+
+To generate all classes of diatonic transitions between dominant, half-diminished, minor, and major seventh chords, enter:
+
+```
+./septima -tc -c 5 -ly -cs d7 hdim7 m7 maj7 >out.ly
+```
+
+Diatonic voice leading is obtained by setting `-c` option to 5. The option `-cs` enables printing chord symbols in the output. We obtain the following 25 transition types:
+
+![Trans_Diatonic](images/trans_diatonic.png)
+
+### Chord graphs
+
+Chord graphs are output in [DOT format](https://graphviz.org/doc/info/lang.html). The computer algebra system [Giac/Xcas](https://www-fourier.ujf-grenoble.fr/~parisse/giac.html) supports importing from DOT and features an extensive package for graph theory.
+
+For example, to create the chord graph on minor seventh chords with edges corresponding to diatonic transitions, enter:
+
+```
+./septima -cg -c 5 m7 >cg.dot
+```
+
+To visualize the graph, use [Graphviz](https://graphviz.org/). In this case it is best to use circular layout, obtained by typing:
+
+```
+circo -Tpng -o cg1.png cg.dot
+```
+
+The result is shown below. 
+
+![CG1](images/cg1.png)
+
+In the following example we create the chord graph on all dominant and half-diminished seventh chords which can be realized in the domain from F&flat; to B&sharp; on the line of fifths, excluding the tones C, G, D, and A. Those chords which cannot be realized in the domain are not included in the graph.
+
+```
+./septima -cg -d -10:-3,2:10 -p generic d7 hdim7 >cg.dot
+dot -Tpng -Grankdir=LR -o cg2.png cg.dot
+```
+
+The result is shown below.
+
+![CG2](images/cg2.png)
+
+For creating chord graphs with nicely typeset labels, consider setting the option `-lf` to `latex`. In that case, `./septima` outputs a file to be processed with [dot2tex](https://dot2tex.readthedocs.io/en/latest/). For example, we create the chord graph on the set {C⁷, E&flat;⁷, F&sharp;⁷, A&#9651;, B&flat;&#216;}. After that, Graphviz is called to create `xdot` format, which is passed to dot2tex (note that `--crop` option is used). The resulting TeX file is compiled with PDFLatex and converted to PNG using pdftoppm (from [Poppler](https://poppler.freedesktop.org/)).
+
+```
+./septima -cg -p generic -lf latex 0:d7 3:m7 6:d7 9:maj7 10:hdim7 >cg.dot
+circo -Txdot -o cg.xdot cg.dot
+dot2tex --crop -o cg.tex cg.xdot
+pdflatex cg.tex
+pdftoppm -png cg.pdf >cg.png
+```
+
+The result is shown below.
+
+![CG3](images/cg3.png)
+
+### Voicings
+
+For example, to generate a voicing for the progression F&#216; &#8594; E⁷ &#8594; A&#9837;&#216; &#8594; G⁷ &#8594; D&#216; &#8594; B⁷, which appears at the beginning of Wagner's *Tristan*, enter:
+
+```
+./septima -v -aa -w 1.0 1.75 0.2 sequences/wagner1.seq
+```
+
+The penalty for augmented sixths is set to 0.2, which is a bit lower than the defult 0.25. This way we obtain the Tristan chord at the beginning. The optimal voicing is output as a sequence of chord realizations.
+
+```
+Using GLPK 4.65
+Finding optimal voicing for the sequence [5:hdim7,4:d7,8:hdim7,7:d7,2:hdim7,11:d7]
+D#-F-G#-B
+D-E-G#-B
+D-F#-G#-B
+D-F-G-B
+D-F-Ab-C
+D#-F#-A-B
+Recommended key signature: 2 sharps
+```
+
+Note that the program also prints the recommended key signature at the end.
