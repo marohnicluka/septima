@@ -13,7 +13,7 @@ This is a C++ library for investigating tonal relations between seventh chords. 
 2. GNU Scientific Library ([GSL](https://www.gnu.org/software/gsl/))
 
 ### Installation
-To compile the library, type "make".
+To compile the library, type `make`.
 
 ## Command-line interface
 
@@ -34,13 +34,13 @@ On Linux terminal, the executable is called like this:
 - `-av`, `--all-voicings` &mdash; Find all optimal voicings for the given chord sequence.
 
 #### Options
-- `-c`, `--class` &mdash; Specify upper bound for voice-leading infinity norm (default: 7).
-- `-dg`, `--degree` &mdash; Specify degree of elementary transitions (default: unset).
-- `-aa`, `--allow-augmented` &mdash; Allow augmented realizations (by default, German sixths and Tristan chords are disabled).
-- `-d`, `--domain` &mdash; Specify domain on the line of fifths (default: {−15,−14,…,15}, which corresponds to notes from Gbb to A##).
-- `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths (default: 0, which corresponds to the note D).
-- `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are *symbol*, *number*, and *latex* (by default: *symbol*).
-- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are *none*, *generic*, and *acoustic* (by default: *none*).
-- `-w`, `--weights` &mdash; Specify weight parameters for voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*₁, voice-leading complexity weight *w*₂, and penalty *w*₃ for augmented sixths (by default, *w*₁ = 1.0, *w*₂ = 1.75, and *w*₃ = 0.25),
+- `-c`, `--class` &mdash; Specify upper bound for voice-leading infinity norm. Default: 7.
+- `-dg`, `--degree` &mdash; Specify degree of elementary transitions. Default: unset.
+- `-aa`, `--allow-augmented` &mdash; Allow augmented realizations. By default, German sixths and Tristan chords are disabled.
+- `-d`, `--domain` &mdash; Specify domain on the line of fifths. Default: {−15,−14,…,15}, which corresponds to notes from G&#119083; to A&#119082;.
+- `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths. Default: 0, which corresponds to the note D.
+- `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are *symbol*, *number*, and *latex*. Default: *symbol*.
+- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are *none*, *generic*, and *acoustic*. Default: *none*.
+- `-w`, `--weights` &mdash; Specify weight parameters for voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 0.25,
 - `-ly`, `--lilypond` &mdash; Output transitions and voicings in Lilypond code.
 - `-q`, `--quiet` &mdash; Suppress messages.
