@@ -17,6 +17,10 @@ Septima is a C++ library for investigating tonal relations between seventh chord
 3. GNU Scientific Library ([GSL](https://www.gnu.org/software/gsl/))
 
 ### Installation
+
+In Ubuntu, dependencies can be installed by typing:
+`sudo apt-get install -y build-essential libglpk-dev libgsl-dev`
+
 To compile the library, type `make`.
 
 ## Command-line interface
