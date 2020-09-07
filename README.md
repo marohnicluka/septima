@@ -3,14 +3,16 @@
 ## Introduction
 
 ### Overview
-This is a C++ library for investigating tonal relations between seventh chords. It can
+Septima is a C++ library for investigating tonal relations between seventh chords. It can
 * generate elementary transitions between seventh chords,
 * create chord networks,
 * find optimal voicings for sequences of seventh chord symbols.
 
 ### Dependencies
-1. GNU Linear Programming Kit ([GLPK](https://www.gnu.org/software/glpk/))
-2. GNU Scientific Library ([GSL](https://www.gnu.org/software/gsl/))
+1. GCC
+2. Standard Template Library (STL)
+2. GNU Linear Programming Kit ([GLPK](https://www.gnu.org/software/glpk/))
+3. GNU Scientific Library ([GSL](https://www.gnu.org/software/gsl/))
 
 ### Installation
 To compile the library, type `make`.
