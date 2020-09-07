@@ -23,7 +23,8 @@
 #include <assert.h>
 #include <math.h>
 
-ChordGraph::ChordGraph(const std::vector<Chord> &chords, int k, const Domain &sup, PreparationScheme p, bool aug, bool use_labels,
+ChordGraph::ChordGraph(const std::vector<Chord> &chords, int k, const Domain &sup,
+                       PreparationScheme p, bool aug, bool use_labels, int vc,
                        bool is_weighted, bool dot_tex) :
     Digraph(is_weighted, dot_tex)
 {
@@ -51,6 +52,15 @@ ChordGraph::ChordGraph(const std::vector<Chord> &chords, int k, const Domain &su
                 continue;
             glp_arc *a = add_arc(i, j);
             transition_map[a] = bt;
+        }
+    }
+    enable_all_vertices();
+    enable_all_arcs();
+    if (vc > 0) {
+        _vc = std::vector<double>(n+1);
+        _vc[0] = vc;
+        for (int i = 1; i <= n; ++i) {
+            _vc[i] = communicability_betweenness_centrality(i);
         }
     }
 }
@@ -184,7 +194,8 @@ double::ChordGraph::communicability_betweenness_centrality(int k) const {
         for (int j = 1; j <= n; ++j) {
             if (j == k || j == i)
                 continue;
-            ret += 1 - eAk.element(i, j) / eA.element(i, j);
+            if (eA.element(i, j) > 0)
+                ret += 1 - eAk.element(i, j) / eA.element(i, j);
         }
     }
     return ret / double((n - 1) * (n - 2));

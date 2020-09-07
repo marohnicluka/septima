@@ -25,6 +25,7 @@
 #include <stack>
 #include <queue>
 #include <float.h>
+#include <string.h>
 
 #define vdata(v) ((v_data*)(v->data))
 #define adata(a) ((a_data*)(a->data))
@@ -419,16 +420,36 @@ Matrix Digraph::adjacency_matrix() const {
 }
 
 void Digraph::output_dot(std::ostream &dot, bool undirected) const {
+    int vc = _vc.empty() ? 0 : (int)_vc.front(), shade;
+    std::string vc_label, hex;
+    char tmp[3];
     if (!undirected)
         dot << "di";
     dot << "graph {\n";
     /* output vertices */
     for (int i = 1; i <= G->nv; ++i) {
+        if (vc) {
+            vc_label = vc == 1 ? " xlabel=" : " style=\"filled\" fillcolor=";
+            if (vc == 1)
+                vc_label += "\"" + std::to_string(_vc[i]) + "\"";
+            else {
+                shade = (int)round(255 * (1.0 - _vc[i]));
+                assert(shade >= 0 && shade <= 255);
+                sprintf(tmp, "%x", shade);
+                if (strlen(tmp) == 1) {
+                    tmp[1] = tmp[0];
+                    tmp[2] = '\0';
+                    tmp[0] = '0';
+                }
+                hex = std::string(tmp);
+                vc_label += "\"#" + hex + hex + hex + "\"";
+            }
+        }
         dot << "  v" << i;
         if (_dot_tex)
-            dot << " [texlbl=\"$" << _vlabels.at(i) << "$\"];\n";
+            dot << " [texlbl=\"$" << _vlabels.at(i) << "$\"" << vc_label << "];\n";
         else
-            dot << " [label=\"" << _vlabels.at(i) << "\"];\n";
+            dot << " [label=\"" << _vlabels.at(i) << "\"" << vc_label << "];\n";
     }
     /* output arcs */
     for (int i = 1; i <= G->nv; ++i) {

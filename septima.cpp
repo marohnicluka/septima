@@ -45,6 +45,7 @@ static void show_usage(std::string name) {
               << " -lf,--label-format       Specify format for chord graph labels\n"
               << " -p, --preparation        Specify preparation scheme for elementary transitions\n"
               << " -w, --weights            Specify weight parameters for voicing algorithm\n"
+              << " -vc,--vertex-centrality  Show centrality measure with each vertex of the chord graph\n"
               << " -ly,--lilypond           Output transitions and voicings in Lilypond code\n"
               << " -cs,--chord-symbols      Print chord symbols above realizations in Lilypond output\n"
               << " -q, --quiet              Suppress messages"
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]) {
     double w1 = 1.0, w2 = 1.75, w3 = 0.25;
     bool aug = false, verbose = true, cs = false;
     PreparationScheme prep_scheme = NO_PREPARATION;
-    std::string label_format = "symbol";
+    std::string label_format = "symbol", vc_format = "none";
     std::string input_filename = "";
     Domain domain = Domain::usual();
     std::vector<Chord> chords;
@@ -186,6 +187,18 @@ int main(int argc, char *argv[]) {
                     }
                 } else {
                     std::cerr << "Error: --label-format requires one argument" << std::endl;
+                    return 1;
+                }
+            } else if (arg == "-vc" || arg == "--vertex-centrality") {
+                if (i + 1 < argc) {
+                    vc_format = argv[++i];
+                    if (vc_format != "none" && vc_format != "label" && vc_format != "color") {
+                        std::cerr << "Error: invalid vertex centrality specifier, expected either 'none', 'label', or 'color'"
+                                  << std::endl;
+                        return 1;
+                    }
+                } else {
+                    std::cerr << "Error: --vertex-centrality requires one argument" << std::endl;
                     return 1;
                 }
             } else if (arg == "-w" || arg == "--weights") {
@@ -310,7 +323,8 @@ int main(int argc, char *argv[]) {
             std::cerr << "Warning: removed " << ndup << " chord duplicates" << std::endl;
         if (verbose)
             std::cerr << "Creating chord graph for " << chords.size() << " chords..." << std::endl;
-        ChordGraph cg(chords, cls, domain, prep_scheme, aug, label_format != "number", false, label_format == "latex");
+        int vc = vc_format == "none" ? 0 : (vc_format == "label" ? 1 : 2);
+        ChordGraph cg(chords, cls, domain, prep_scheme, aug, label_format != "number", vc, false, label_format == "latex");
         bool is_undirected = prep_scheme == NO_PREPARATION;
         int ne = cg.number_of_arcs();
         if (is_undirected) {
@@ -326,7 +340,7 @@ int main(int argc, char *argv[]) {
         if (verbose)
             std::cerr << "Finding optimal voicing for the sequence " << chords << std::endl;
         std::vector<Chord> all_chords = Chord::all_seventh_chords();
-        ChordGraph cg(all_chords, cls, domain, prep_scheme, aug, false, false, false);
+        ChordGraph cg(all_chords, cls, domain, prep_scheme, aug, false, 0, false, false);
         voicing v;
         int z0;
         if (cg.best_voicing(chords, z0, w1, w2, w3, v)) {
@@ -341,7 +355,7 @@ int main(int argc, char *argv[]) {
         if (verbose)
             std::cerr << "Finding all optimal voicings for the sequence " << chords << std::endl;
         std::vector<Chord> all_chords = Chord::all_seventh_chords();
-        ChordGraph cg(all_chords, cls, domain, prep_scheme, aug, false, false, false);
+        ChordGraph cg(all_chords, cls, domain, prep_scheme, aug, false, 0, false, false);
         std::set<voicing> vs;
         int i = 0;
         if (cg.best_voicings(chords, w1, w2, w3, vs)) {

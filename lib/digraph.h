@@ -66,6 +66,9 @@ private:
 
     void output_dot(std::ostream &dot, bool undirected) const;
 
+protected:
+    std::vector<double> _vc;
+
 public:
     Digraph(bool is_weighted, bool dot_tex);
     /* constructor

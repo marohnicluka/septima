@@ -52,7 +52,8 @@ class ChordGraph : public Digraph {
     /* makes this network acyclic by making some arcs inactive */
 
 public:
-    ChordGraph(const std::vector<Chord> &chords, int k, const Domain &sup, PreparationScheme p, bool aug, bool use_labels,
+    ChordGraph(const std::vector<Chord> &chords, int k, const Domain &sup,
+               PreparationScheme p, bool aug, bool use_labels, int vc,
                bool is_weighted = false, bool dot_tex = false);
     /* constructs the chord graph using chords as vertices
      *  - if a chord does not have realizations in sup, then it is not added to the graph
@@ -61,6 +62,7 @@ public:
      *  - if use_labels = true, then vertices are labeled by chord names, else by 1, 2, ...
      *  - p is preparation scheme (see transition.h)
      *  - if aug = true, augmented sixths are allowed
+     *  - vc is vertex-centrality, if 0 do not compute, if 1 or 2 set to xlabel resp. color attribute
      */
 
     int class_index() const;

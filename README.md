@@ -10,6 +10,8 @@ Septima is a C++ library for investigating tonal relations between seventh chord
 * creating chord networks
 * finding optimal voicings for sequences of seventh chord symbols
 
+Command-line interface is provided for using library features from a terminal.
+
 ### Dependencies
 1. GCC
 2. Standard Template Library (STL)
@@ -66,8 +68,9 @@ In a Linux terminal, the executable is called like this:
 - `-d`, `--domain` &mdash; Specify domain on the line of fifths. It is entered as a comma-separated list of integers. Blocks of several consecutive integers, such as e.g. 1,2,3,4,5, can be entered as 1:5. The default domain is {−15,−14,…,15}, which corresponds to notes from G&#119083; to A&#119082;.
 - `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths. Default: 0, which corresponds to the note D.
 - `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are *symbol*, *number*, and *latex*. Default: *symbol*.
-- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are *none*, *generic*, and *acoustic*. Default: *none*.
+- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are *none*, *generic* (for preparation of generic sevenths), and *acoustic* (for preparation of acoustic sevenths). Default: *none*.
 - `-w`, `--weights` &mdash; Specify weight parameters for the voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 0.25.
+- `-vc`, `--vertex-centrality` &mdash; Show centrality measure with each vertex of the chord graph. Choices are *none*, *label*, and *color*. Default: *none*.
 - `-ly`, `--lilypond` &mdash; Output transitions and voicings in Lilypond code.
 - `-cs`, `--chord-symbols` &mdash; Print chord symbols above realizations in Lilypond output.
 - `-q`, `--quiet` &mdash; Suppress messages.
@@ -148,7 +151,7 @@ The result is shown below.
 
 ![CG1](images/cg1.png)
 
-In the following example we create the chord graph on all dominant and half-diminished seventh chords which can be realized in the domain from F&flat; to B&sharp; on the line of fifths, excluding the tones C, G, D, and A. Those chords which cannot be realized in the domain are not included in the graph.
+In the following example we create the chord graph on all dominant and half-diminished seventh chords which can be realized in the domain from F&flat; to B&sharp; on the line of fifths, excluding the tones C, G, D, and A. Those chords which cannot be realized in the domain are not included in the graph. Note that the resulting graph is directed because the option `-p` is set to `generic` and hence only transitions in which the generic seventh of second chord is prepared in the first chord are considered. 
 
 ```
 ./septima -cg -d -10:-3,2:10 -p generic d7 hdim7 >cg.dot
@@ -159,7 +162,7 @@ The result is shown below.
 
 ![CG2](images/cg2.png)
 
-For creating chord graphs with nicely typeset labels, consider setting the option `-lf` to `latex`. In that case, `./septima` outputs a file to be processed with [dot2tex](https://dot2tex.readthedocs.io/en/latest/). For example, we create the chord graph on the set {C⁷, E&flat;⁷, F&sharp;⁷, A&#9651;, B&flat;&#216;}. After that, Graphviz is called to create `xdot` format, which is passed to dot2tex (note that `--crop` option is used). The resulting TeX file is compiled with PDFLatex and converted to PNG using pdftoppm (from [Poppler](https://poppler.freedesktop.org/)).
+For creating chord graphs with nicely typeset labels, consider setting the option `-lf` to `latex`. In that case, `./septima` outputs a file to be processed with [dot2tex](https://dot2tex.readthedocs.io/en/latest/). For example, a chord graph on the set {C⁷, E&flat;⁷, F&sharp;⁷, A&#9651;, B&flat;&#216;} is created. After that, Graphviz is called to create `xdot` format, which is passed to dot2tex (note that `--crop` option is used). The resulting TeX file is compiled with PDFLatex and converted to PNG using pdftoppm (from [Poppler](https://poppler.freedesktop.org/)).
 
 ```
 ./septima -cg -p generic -lf latex 0:d7 3:m7 6:d7 9:maj7 10:hdim7 >cg.dot
@@ -172,6 +175,17 @@ pdftoppm -png cg.pdf >cg.png
 The result is shown below.
 
 ![CG3](images/cg3.png)
+
+By setting the option `-vc` one can obtain more informative graphs. In that case, communnicability betweenness centrality (CBC) is computed for each vertex (see [this paper](https://arxiv.org/abs/0905.4102) by E. Estrada *et al.*). If `-vc` is set to `label` resp. `color`, then CBC measure *cₖ* is written in the **xlabel** resp. **fillcolor** attribute of the *k*-th vertex. When processed by Graphviz, *cₖ* is either shown near the respective vertex or it represents a particular color in the gray scale&mdash;represented by the segment [0, 1] where 0 and 1 correspond to white black color, respectively. For example, a chord graph on the set {C⁷, C&sharp;&#216;, Dm⁷, E&flat;&#9651;, G⁷, A&flat;&#216; Am⁷, B&flat;&#9651;} is visualized by typing:
+
+```
+./septima -cg -p generic -vc color 0:d7 7:d7 1:hdim7 8:hdim7 2:m7 9:m7 3:maj7 10:maj7 >cg.dot
+circo -Tpng -o cg.png cg.dot
+```
+
+The obtained image is shown below. Darker vertices are more important, which means that they appear inside random walks (not at the beginning nor end) with higher probability.
+
+![CG4](images/cg4.png)
 
 ### Voicings
 
