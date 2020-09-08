@@ -62,7 +62,7 @@ public:
      *  - if use_labels = true, then vertices are labeled by chord names, else by 1, 2, ...
      *  - p is preparation scheme (see transition.h)
      *  - if aug = true, augmented sixths are allowed
-     *  - vc is vertex-centrality, if 0 do not compute, if 1 or 2 set to xlabel resp. color attribute
+     *  - vc is vertex-centrality, if 0 do not compute, if 1 or 2 set to xlabel resp. fillcolor attribute
      */
 
     int class_index() const;

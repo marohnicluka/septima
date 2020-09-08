@@ -104,7 +104,7 @@ rm out-*
 
 The following output (`out.png`) is obtained:
 
-![Trans_C7-Bdim7](images/trans_C7-Bdim7.png)
+<p align="center"><img src="images/trans_C7-Bdim7.png" width="62%"></p>
 
 #### Generating all structural classes of transitions between chords in the given set
 
@@ -117,9 +117,9 @@ Each class is represented by the transition which is closest to the tonal center
 
 After converting `out.ly` to PNG using Lilypond, we obtain:
 
-![Trans_d7-d7](images/trans_d7-d7.png)
+<p align="center"><img src="images/trans_d7-d7.png" width="70%"></p>
 
-We conclude that there are six structurally different ways to connect two dominant seventh chords using diatonic/chromatic voice leading. In the second transition, the destination chord is spelled as German sixth.
+Hence there exist exactly seven structurally different ways to connect two dominant seventh chords using diatonic/chromatic voice leading.
 
 To generate all classes of diatonic transitions between dominant, half-diminished, minor, and major seventh chords, enter:
 
@@ -129,7 +129,7 @@ To generate all classes of diatonic transitions between dominant, half-diminishe
 
 Diatonic voice leading is obtained by setting `-c` option to 5. The option `-cs` enables printing chord symbols in the output. We obtain the following 25 transition types:
 
-![Trans_Diatonic](images/trans_diatonic.png)
+<p align="center"><img src="images/trans_diatonic.png" width="70%"></p>
 
 ### Chord graphs
 

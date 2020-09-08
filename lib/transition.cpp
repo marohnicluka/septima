@@ -391,6 +391,14 @@ int Transition::vl_shift() const {
     return pd;
 }
 
+int Transition::lof_shift() const {
+    int pd = 0;
+    for (int i = 0; i < 4; ++i) {
+        pd += Tone::lof_distance(first().tone(i), second().tone(i));
+    }
+    return pd;
+}
+
 int Transition::directional_vl_shift() const {
     int pd = 0, d;
     for (int i = 0; i < 4; ++i) {
@@ -398,6 +406,14 @@ int Transition::directional_vl_shift() const {
         if (d > 6)
             d -= 12;
         pd += d;
+    }
+    return abs(pd);
+}
+
+int Transition::directional_lof_shift() const {
+    int pd = 0;
+    for (int i = 0; i < 4; ++i) {
+        pd += second().tone(i).lof_position() - first().tone(i).lof_position();
     }
     return abs(pd);
 }
@@ -474,15 +490,18 @@ std::set<Transition> Transition::elementary_transitions(const Chord &c1, const C
                 if (j == 4 && s == Tone::modd(2 * Tone::lof_distance(it->tone(rv1), jt->tone(rv2)), 7)) {
                     Realization r1(*it), r2(*jt);
                     r2.arrange(f);
+                    Transition T(r1, r2);
+                    if (T.lof_shift() == 28)
+                        continue;
                     if (p == PREPARE_GENERIC) {
                         sv = r2.generic_seventh_voice();
                         if (r1.tone(sv) == r2.tone(sv))
-                            ret.insert(Transition(r1, r2));
+                            ret.insert(T);
                     } else {
                         sv = r2.acoustic_seventh_voice();
                         if (p == NO_PREPARATION || sv < 0 || (p == PREPARE_ACOUSTIC_NO_DOMINANT && c2.type() == DOMINANT_SEVENTH) ||
                                 r1.tone(sv).pitch_class() == r2.tone(sv).pitch_class())
-                            ret.insert(Transition(r1, r2));
+                            ret.insert(T);
                     }
                 }
             }

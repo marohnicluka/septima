@@ -145,8 +145,14 @@ public:
     int vl_shift() const;
     /* returns the total voice-leading shift (Kochavi 2008) */
 
+    int lof_shift() const;
+    /* returns the total voice-leading shift on the line of fifths */
+
     int directional_vl_shift() const;
     /* returns the total voice-leading shift with directions (Kochavi 2008) */
+
+    int directional_lof_shift() const;
+    /* returns absolute value of the sum x-v(x) for x in X */
 
     int degree() const;
     /* returns the degree of this progression (smallest M such that it is of class M) */
