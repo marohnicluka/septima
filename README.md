@@ -10,7 +10,7 @@ Septima is a C++ library for investigating tonal relations between seventh chord
 * creating chord networks
 * finding optimal voicings for sequences of seventh chord symbols
 
-Command-line interface is provided for using library features from a terminal.
+A command-line interface is provided for using library features from a terminal.
 
 ### Dependencies
 1. GCC
@@ -133,7 +133,7 @@ Diatonic voice leading is obtained by setting `-c` option to 5. The option `-cs`
 
 ### Chord graphs
 
-Chord graphs are output in [DOT format](https://graphviz.org/doc/info/lang.html). The computer algebra system [Giac/Xcas](https://www-fourier.ujf-grenoble.fr/~parisse/giac.html) supports importing from DOT and features an extensive package for graph theory.
+Chord graphs are output in [DOT format](https://graphviz.org/doc/info/lang.html). It may be worth noting that the free computer algebra system [Giac/Xcas](https://www-fourier.ujf-grenoble.fr/~parisse/giac.html) supports importing from DOT and features an extensive package for graph theory.
 
 For example, to create the chord graph on minor seventh chords with edges corresponding to diatonic relations, enter:
 
@@ -149,7 +149,7 @@ circo -Tpng -o cg1.png cg.dot
 
 The result is shown below. 
 
-![CG1](images/cg1.png)
+<p align="center"><img src="images/cg1.png" width="50%"></p>
 
 In the following example we create the chord graph on all dominant and half-diminished seventh chords which can be realized in the domain from F&flat; to B&sharp; on the line of fifths, excluding the tones C, G, D, and A. Those chords which cannot be realized in the domain are not included in the graph. Note that the resulting graph is directed because the option `-p` is set to `generic` and hence only transitions in which the generic seventh of second chord is prepared in the first chord are considered. 
 
@@ -160,32 +160,32 @@ dot -Tpng -Grankdir=LR -o cg2.png cg.dot
 
 The result is shown below.
 
-![CG2](images/cg2.png)
+<p align="center"><img src="images/cg2.png" width="50%"></p>
 
-For creating chord graphs with nicely typeset labels, consider setting the option `-lf` to `latex`. In that case, `./septima` outputs a file to be processed with [dot2tex](https://dot2tex.readthedocs.io/en/latest/). For example, a chord graph on the set {C⁷, E&flat;⁷, F&sharp;⁷, A&#9651;, B&flat;&#216;} is created. After that, Graphviz is called to create `xdot` format, which is passed to dot2tex (note that `--crop` option is used). The resulting TeX file is compiled with PDFLatex and converted to PNG using pdftoppm (from [Poppler](https://poppler.freedesktop.org/)).
+For creating chord graphs with nicely typeset chord symbols, consider setting the option `-lf` to `latex`. In that case, `./septima` outputs a file to be processed with [dot2tex](https://dot2tex.readthedocs.io/en/latest/). For example, a chord graph on the set {C⁷, E&flat;⁷, F&sharp;⁷, A&#9651;, B&flat;&#216;} is created. After that, Graphviz is called to create `xdot` format, which is passed to dot2tex (note that `--crop` option is used). The resulting TeX file is compiled with PDFLatex and converted to PNG using pdftoppm (from [Poppler](https://poppler.freedesktop.org/)), as follows.
 
 ```
 ./septima -cg -p generic -lf latex 0:d7 3:m7 6:d7 9:maj7 10:hdim7 >cg.dot
 circo -Txdot -o cg.xdot cg.dot
-dot2tex --crop -o cg.tex cg.xdot
+dot2tex --crop -tmath --figpreamble="\Large" -o cg.tex cg.xdot
 pdflatex cg.tex
 pdftoppm -png cg.pdf >cg.png
 ```
 
 The result is shown below.
 
-![CG3](images/cg3.png)
+<p align="center"><img src="images/cg3.png" width="400"></p>
 
-By setting the option `-vc` one can obtain more informative graphs. In that case, communnicability betweenness centrality (CBC) is computed for each vertex (see [this paper](https://arxiv.org/abs/0905.4102) by E. Estrada *et al.*). If `-vc` is set to `label` resp. `color`, then CBC measure *cₖ* is written in the **xlabel** resp. **fillcolor** attribute of the *k*-th vertex. When processed by Graphviz, *cₖ* is either shown near the respective vertex or it represents a particular color in the gray scale&mdash;represented by the segment [0, 1] where 0 and 1 correspond to white black color, respectively. For example, a chord graph on the set {C⁷, C&sharp;&#216;, Dm⁷, E&flat;&#9651;, G⁷, A&flat;&#216; Am⁷, B&flat;&#9651;} is visualized by typing:
+By setting the option `-vc` one can obtain more informative graphs. In that case, communnicability betweenness centrality (CBC) is computed for each vertex (see [this paper](https://arxiv.org/abs/0905.4102) by E. Estrada *et al.*). The original definition is adjusted for graphs which are not (strongly) connected. If `-vc` is set to `label` resp. `color`, then CBC measure *cₖ* is written in the **xlabel** resp. **fillcolor** attribute of the *k*-th vertex. When processed by Graphviz, *cₖ* is either shown near the respective vertex or it represents a particular color in the gray scale&mdash;represented by the segment [0, 1] where 0 and 1 correspond to white black color, respectively. For example, a chord graph on the set {C⁷, C&sharp;&#216;, Dm⁷, E&flat;&#9651;, G⁷, A&flat;&#216; Am⁷, B&flat;&#9651;} is visualized by typing:
 
 ```
 ./septima -cg -p generic -vc color 0:d7 7:d7 1:hdim7 8:hdim7 2:m7 9:m7 3:maj7 10:maj7 >cg.dot
 circo -Tpng -o cg.png cg.dot
 ```
 
-The obtained image is shown below. Darker vertices are more important, which means that they appear inside random walks (not at the beginning nor end) with higher probability.
+The obtained image is shown below. Darker vertices are more important as stepping-stones in chord progressions.
 
-![CG4](images/cg4.png)
+<p align="center"><img src="images/cg4.png" width="50%"></p>
 
 ### Voicings
 

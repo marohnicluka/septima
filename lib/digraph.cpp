@@ -443,6 +443,8 @@ void Digraph::output_dot(std::ostream &dot, bool undirected) const {
                 }
                 hex = std::string(tmp);
                 vc_label += "\"#" + hex + hex + hex + "\"";
+                if (_vc[i] > 0.5)
+                    vc_label += " fontcolor=\"white\"";
             }
         }
         dot << "  v" << i;

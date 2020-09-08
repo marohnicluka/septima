@@ -179,7 +179,7 @@ double ChordGraph::betweenness_centrality(int i, const pathmap &path_map) const 
 }
 
 double::ChordGraph::communicability_betweenness_centrality(int k) const {
-    int n = number_of_vertices();
+    int n = number_of_vertices(), m = 0;
     if (n < 3)
         return 0;
     Matrix A = adjacency_matrix(), Ak = A;
@@ -194,11 +194,15 @@ double::ChordGraph::communicability_betweenness_centrality(int k) const {
         for (int j = 1; j <= n; ++j) {
             if (j == k || j == i)
                 continue;
-            if (eA.element(i, j) > 0)
+            if (eA.element(i, j) > 0) {
                 ret += 1 - eAk.element(i, j) / eA.element(i, j);
+                ++m;
+            }
         }
     }
-    return ret / double((n - 1) * (n - 2));
+    if (m == 0)
+        return 0;
+    return ret / m;
 }
 
 double ChordGraph::katz_centrality(int k, bool rev) const {
