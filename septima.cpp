@@ -31,7 +31,7 @@ static void show_usage(std::string name) {
     std::cerr << "Usage: " << name << " <task> [<option(s)>] CHORDS or FILE\n"
               << "Tasks:\n"
               << " -h, --help               Show this help message\n"
-              << " -t, --transitions        Generate transitions between two seventh chords\n"
+              << " -t, --transitions        Generate transitions from the first seventh chord to the rest\n"
               << " -tc,--transition-classes Generate all structural classes of transitions between seventh chords\n"
               << " -cg,--chord-graph        Create chord graph from chords\n"
               << " -v, --voicing            Output an optimal voicing for the given chord sequence\n"
@@ -40,6 +40,8 @@ static void show_usage(std::string name) {
               << " -c, --class              Specify upper bound for voice-leading infinity norm\n"
               << " -dg,--degree             Specify degree of elementary transitions\n"
               << " -aa,--allow-augmented    Allow augmented realizations\n"
+              << " -fa,--force-augmented    Spell first realization in a transition as augmented sixth\n"
+              << " -nr,--no-respell         Do not respell augmented sixths\n"
               << " -d, --domain             Specify domain on the line of fifths\n"
               << " -z, --tonal-center       Specify tonal center on the line of fifths\n"
               << " -lf,--label-format       Specify format for chord graph labels\n"
@@ -59,12 +61,21 @@ static void output_transitions(const std::vector<Transition> &trans, Preparation
                   << "\\score {\n"
                   << "\t\\new Staff {\n\t\t\\override Score.TimeSignature.stencil = ##f\n"
                   << "\t\t\\override Score.BarNumber.stencil = ##f\n"
-                  << "\t\t\\time 2/1\n\t\\accidentalStyle modern\n";
+                  << "\t\t\\time 2/1\n\t\t\\accidentalStyle modern\n";
         for (std::vector<Transition>::const_iterator it = trans.begin(); it != trans.end(); ++it) {
             std::cout << "\t\t" << it->to_lily(70, prep_scheme == PREPARE_GENERIC, lily == 2) << " |\n";
         }
         std::cout << "\t}\n\t\\layout { indent = 0\\cm }\n}\n";
     } else std::cout << trans;
+}
+
+static void isolate_degree(std::vector<Transition> &trans, int deg) {
+    if (deg > 0) {
+        for (int i = trans.size(); i-->0;) {
+            if (trans[i].degree() != deg)
+                trans.erase(trans.begin() + i);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -74,7 +85,7 @@ int main(int argc, char *argv[]) {
     }
     int task = 0, deg = 0, cls = 7, z = 0, lily = 0;
     double w1 = 1.0, w2 = 1.75, w3 = 0.25;
-    bool aug = false, verbose = true, cs = false;
+    bool aug = false, faug = false, respell = true, verbose = true, cs = false;
     PreparationScheme prep_scheme = NO_PREPARATION;
     std::string label_format = "symbol", vc_format = "none";
     std::string input_filename = "";
@@ -102,20 +113,16 @@ int main(int argc, char *argv[]) {
             }
         } else { // parse options
             if (arg == "-c" || arg == "--class") {
-                if (deg > 0) {
-                    std::cerr << "Warning: --degree option is already specified" << std::endl;
-                } else {
-                    if (i + 1 < argc) {
-                        cls = atoi(argv[++i]);
-                        if (cls <= 0) {
-                            std::cerr << "Error: invalid class-index specification, expected a positive integer"
-                                      << std::endl;
-                            return 1;
-                        }
-                    } else {
-                        std::cerr << "Error: --class option requires one argument" << std::endl;
+                if (i + 1 < argc) {
+                    cls = atoi(argv[++i]);
+                    if (cls <= 0) {
+                        std::cerr << "Error: invalid class-index specification, expected a positive integer"
+                                  << std::endl;
                         return 1;
                     }
+                } else {
+                    std::cerr << "Error: --class option requires one argument" << std::endl;
+                    return 1;
                 }
             } else if (arg == "-dg" || arg == "--degree") {
                 if (i + 1 < argc) {
@@ -125,13 +132,16 @@ int main(int argc, char *argv[]) {
                                   << std::endl;
                         return 1;
                     }
-                    cls = 0;
                 } else {
                     std::cerr << "Error: --class option requires one argument" << std::endl;
                     return 1;
                 }
             } else if (arg == "-aa" || arg == "--allow-augmented") {
                 aug = true;
+            } else if (arg == "-fa" || arg == "--force-augmented") {
+                faug = true;
+            } else if (arg == "-nr" || arg == "--no-respell") {
+                respell = false;
             } else if (arg == "-d" || arg == "--domain") {
                 if (i + 1 < argc) {
                     domain = Domain::parse(argv[++i]);
@@ -309,7 +319,7 @@ int main(int argc, char *argv[]) {
         lily = 2;
     if (verbose && task <= 3)
         std::cerr << "Using GLPK " << glp_version() << std::endl;
-    if (task == 1) { // create chord graph
+    if (task == 1 || task == 4 || task == 5) { // delete chord duplicates
         int ndup = 0;
         for (int i = 0; i < int(chords.size()); ++i) {
             for (int j = chords.size(); j-->i+1;) {
@@ -320,7 +330,9 @@ int main(int argc, char *argv[]) {
             }
         }
         if (ndup > 0 && verbose)
-            std::cerr << "Warning: removed " << ndup << " chord duplicates" << std::endl;
+            std::cerr << "Warning: removed " << ndup << " chord duplicate(s)" << std::endl;
+    }
+    if (task == 1) { // create chord graph
         if (verbose)
             std::cerr << "Creating chord graph for " << chords.size() << " chords..." << std::endl;
         int vc = vc_format == "none" ? 0 : (vc_format == "label" ? 1 : 2);
@@ -366,23 +378,55 @@ int main(int argc, char *argv[]) {
                 std::cout << *it;
             }
         } else std::cerr << "Error: the given progression does not match chord graph specifications" << std::endl;
-    } else if (task == 4) { // generate elementary transitions between two seventh chords
-        if (chords.size() == 2 && chords.front() != chords.back()) {
-            const Chord &c1 = chords.front(), &c2 = chords.back();
-            std::vector<Transition> trans = Transition::elementary_classes(c1, c2, cls, prep_scheme, z, aug);
+    } else if (task == 4) { // generate elementary transitions from the given seventh chord to one of other chords
+        if (chords.size() >= 2) {
+            bool duo = chords.size() == 2;
+            const Chord &c = chords.front();
+            std::vector<Chord> rest(chords.begin()+1, chords.end());
+            std::vector<Transition> trans;
+            for (std::vector<Chord>::const_iterator it = chords.begin() + 1; it != chords.end(); ++it) {
+                std::vector<Transition> tr = Transition::elementary_classes(c, *it, cls, prep_scheme, z, aug || faug);
+                if (faug) {
+                    for (int i = tr.size(); i-->0;) {
+                        if (!tr[i].first().is_augmented_sixth())
+                            tr.erase(tr.begin()+i);
+                    }
+                    if (!aug) {
+                        for (int i = tr.size(); i-->0;) {
+                            if (tr[i].second().is_augmented_sixth())
+                                tr.erase(tr.begin()+i);
+                        }
+                    }
+                }
+                trans.insert(trans.end(), tr.begin(), tr.end());
+            }
+            if (respell)
+                Transition::simplify_enharmonic_classes(trans);
+            isolate_degree(trans, deg);
+            std::sort(trans.begin(), trans.end());
             if (trans.empty()) {
-                if (verbose)
-                    std::cerr << "No transitions found between " << c1 << " and " << c2 << std::endl;
+                if (verbose) {
+                    if (duo)
+                        std::cerr << "No transitions found between " << c << " and " << chords.back() << std::endl;
+                    else
+                        std::cerr << "No transitions found from " << c << " to one of " << rest << std::endl;
+                }
             } else {
-                if (verbose)
-                    std::cerr << "Found " << trans.size() << " transitions between " << c1 << " and " << c2 << std::endl;
+                if (verbose) {
+                    std::cerr << "Found " << trans.size() << " transitions between " << c
+                              << " and " << (duo ? "" : "one of ");
+                    if (duo)
+                        std::cerr << chords.back() << std::endl;
+                    else
+                        std::cerr << rest << std::endl;
+                }
                 output_transitions(trans, prep_scheme, lily);
             }
-        } else std::cerr << "Error: task --transitions requires exactly two mutually different chords, found "
-                         << chords.size() << std::endl;
+        } else std::cerr << "Error: task --transitions requires at least two distinct chords" << std::endl;
     } else if (task == 5) { // generate classes of elementary transitions
         if (chords.size() > 1) {
-            std::vector<Transition> trans = Transition::elementary_types(chords, cls, prep_scheme, z, aug);
+            std::vector<Transition> trans = Transition::elementary_types(chords, cls, prep_scheme, z, aug, respell);
+            isolate_degree(trans, deg);
             if (trans.empty()) {
                 if (verbose)
                     std::cerr << "No transitions found for chords " << chords << std::endl;

@@ -163,6 +163,9 @@ public:
     bool acts_identically_on_pc_intersection() const;
     /* returns true iff the voice leading acts identically on the intersection of the corresponding pcsets */
 
+    ipair mn_type() const;
+    /* returns the pair (m,n) in which m is the number of semitones and n the number of whole steps in voice leading */
+
     bool is_prepared_generic() const;
     /* returns true iff the generic seventh in the second realization is prepared in the first */
 
@@ -180,7 +183,7 @@ public:
     /* returns the list of transitions representing the structural equivalence classes of elementary transitions
      * of class k from c to d (representatives are chosen near z on the line of fifths) */
 
-    static std::vector<Transition> elementary_types(const std::vector<Chord> &chords, int k, PreparationScheme p, int z, bool aug);
+    static std::vector<Transition> elementary_types(const std::vector<Chord> &chords, int k, PreparationScheme p, int z, bool aug, bool simp = true);
     /* returns the set of types of elementary transitions of class k, enharmonic classes are simplifed */
 
     static std::set<std::vector<Transition> > enharmonic_classes(const std::vector<Transition> &st);
@@ -190,6 +193,9 @@ public:
     /* simplifies the class st of enharmonically equal transitions by
      * respelling augmented sixths and reducing the voice-leading infinity norm
      */
+
+    static void simplify_enharmonic_classes(std::vector<Transition> &cl);
+    /* a convenience routine */
 
     static const int sym4[][4];
     static const char* chord_type_names[];
