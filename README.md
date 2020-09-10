@@ -3,14 +3,14 @@
 ## Introduction
 
 ### Overview
-Septima is a C++ library for investigating tonal relations between seventh chords.
+Septima is a C++ library for exploring tonal relations between seventh chords.
 
 #### Features
 * generating elementary transitions between seventh chords
 * creating chord networks
 * finding optimal voicings for sequences of seventh chord symbols
 
-A command-line interface is provided for using library features from a terminal.
+A command-line interface is provided for using the above key features from a terminal.
 
 ### Dependencies
 1. GCC
@@ -76,10 +76,10 @@ On a Linux machine, the executable is called from terminal like this:
 - `-fa`, `--force-augmented` &mdash; Spell first realization in a transition as augmented sixth.
 - `-d`, `--domain` &mdash; Specify domain on the line of fifths. It is entered as a comma-separated list of integers. Blocks of several consecutive integers, such as e.g. 1,2,3,4,5, can be entered as 1:5. The default domain is {−15,−14,…,15}, which corresponds to notes from G&#119083; to A&#119082;.
 - `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths. Default: 0, which corresponds to the note D.
-- `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are *symbol*, *number*, and *latex*. Default: *symbol*.
-- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are *none*, *generic* (for preparation of generic sevenths), and *acoustic* (for preparation of acoustic sevenths). Default: *none*.
+- `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are **symbol**, **number**, and **latex**. Default: **symbol**.
+- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are **none**, **generic** (for preparation of generic sevenths), and **acoustic** (for preparation of acoustic sevenths). Default: *none*.
 - `-w`, `--weights` &mdash; Specify weight parameters for the voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 0.25.
-- `-vc`, `--vertex-centrality` &mdash; Show centrality measure with each vertex of the chord graph. Choices are *none*, *label*, and *color*. Default: *none*.
+- `-vc`, `--vertex-centrality` &mdash; Show centrality measure with each vertex of the chord graph. Choices are **none**, **label**, and **color**. Default: **none**.
 - `-ly`, `--lilypond` &mdash; Output transitions and voicings in Lilypond code.
 - `-cs`, `--chord-symbols` &mdash; Print chord symbols above realizations in Lilypond output.
 - `-q`, `--quiet` &mdash; Suppress messages.
@@ -115,6 +115,16 @@ The following output (`out.png`) is obtained:
 
 <p align="center"><img src="images/trans_C7-Bdim7.png" width="62%"></p>
 
+In the next example, all connections of Tristan chord to another dominant/half-diminished seventh chord are generated. Enter:
+
+```
+./septima -t -aa -fa -cs -ly 5:hdim7 d7 hdim7 >out.ly
+```
+
+Note that a list of seventh chords is given; the first chord is called *home chord* while others are *destination chords*. Any duplicates are automatically removed. The option `-fa` forces the home chord to be spelled as an augmented sixth, while `-cs` enables printing chord symbols in the output. Processing `out.ly` with Lilypond, similarly to above, produces the following image:
+
+<p align="center"><img src="images/trans_TC.png" width="70%"></p>
+
 #### Generating all structural classes of transitions between chords in the given set
 
 For the given set of seventh chords, all possible elementary transitions are generated and split into structural-equivalence classes.
@@ -136,13 +146,13 @@ To generate all classes of diatonic transitions between dominant, half-diminishe
 ./septima -tc -c 5 -ly -cs d7 hdim7 m7 maj7 >out.ly
 ```
 
-Diatonic voice leading is obtained by setting `-c` option to 5. The option `-cs` enables printing chord symbols in the output. We obtain the following 25 transition types:
+Diatonic voice leading is obtained by setting `-c` option to 5. The following 25 transition types are obtained:
 
 <p align="center"><img src="images/trans_diatonic.png" width="70%"></p>
 
 ### Chord graphs
 
-Chord graphs are output in [DOT format](https://graphviz.org/doc/info/lang.html). It may be worth noting that the free computer algebra system [Giac/Xcas](https://www-fourier.ujf-grenoble.fr/~parisse/giac.html) supports importing from DOT and features an extensive package for graph theory, which may be useful for investigating properties of chord graphs.
+Chord graphs are output in [DOT format](https://graphviz.org/doc/info/lang.html). It may be worth noting that the free computer algebra system [Giac/Xcas](https://www-fourier.ujf-grenoble.fr/~parisse/giac.html) supports importing from DOT and features an extensive package for graph theory, which can be useful for investigating properties of chord graphs.
 
 For example, to create the chord graph on minor seventh chords with edges corresponding to diatonic relations, enter:
 
@@ -204,7 +214,7 @@ For example, to generate a voicing for the progression F&#216; &#8594; E⁷ &#85
 ./septima -v -aa -w 1.0 1.75 0.2 sequences/Wagner1.seq
 ```
 
-The penalty for augmented sixths is set to 0.2, which is a bit lower than the defult 0.25. This way the famous Tristan chord is obtained at the beginning. The optimal voicing is output as a sequence of chord realizations.
+The penalty for augmented sixths is set to 0.2, which is a bit lower than the defult 0.25. This way Tristan chord is obtained at the beginning. The optimal voicing is output as a sequence of chord realizations.
 
 ```
 Using GLPK 4.65

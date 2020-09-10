@@ -54,18 +54,34 @@ static void show_usage(std::string name) {
               << std::endl;
 }
 
-static void output_transitions(const std::vector<Transition> &trans, PreparationScheme prep_scheme, int lily) {
+static void output_transitions(const std::vector<Transition> &trans, PreparationScheme prep_scheme, int lily, bool full_chord_names) {
+    std::string tab = "\t\t";
     if (lily) {
         std::cout << "\\include \"lilypond-book-preamble.ly\"\n"
                   << "\\paper {\n\toddFooterMarkup = ##f\n\t#(include-special-characters)\n}\n"
-                  << "\\score {\n"
-                  << "\t\\new Staff {\n\t\t\\override Score.TimeSignature.stencil = ##f\n"
-                  << "\t\t\\override Score.BarNumber.stencil = ##f\n"
-                  << "\t\t\\time 2/1\n\t\t\\accidentalStyle modern\n";
-        for (std::vector<Transition>::const_iterator it = trans.begin(); it != trans.end(); ++it) {
-            std::cout << "\t\t" << it->to_lily(70, prep_scheme == PREPARE_GENERIC, lily == 2) << " |\n";
+                  << "\\score {\n";
+        if (full_chord_names) {
+            tab = "\t\t\t";
+            std::cout << "\t<<\n\t\t\\new ChordNames \\chordmode{\n";
+            for (std::vector<Transition>::const_iterator it = trans.begin(); it !=trans.end(); ++it) {
+                std::cout << tab << "s1 " << it->second().chord().to_lily(1) << "\n";
+            }
+            std::cout << "\t\t}\n\t";
         }
-        std::cout << "\t}\n\t\\layout { indent = 0\\cm }\n}\n";
+        std::cout << "\t\\new Staff {\n"
+                  << tab << "\\override Score.TimeSignature.stencil = ##f\n"
+                  << tab << "\\override Score.BarNumber.stencil = ##f\n"
+                  << tab << "\\time 2/1\n\t\t\\accidentalStyle modern\n";
+        for (std::vector<Transition>::const_iterator it = trans.begin(); it != trans.end(); ++it) {
+            std::cout << tab << it->to_lily(70, prep_scheme == PREPARE_GENERIC, lily == 2 && !full_chord_names)
+                      << " |\n";
+        }
+        if (full_chord_names)
+            std::cout << "\t";
+        std::cout << "\t}\n";
+        if (full_chord_names)
+            std::cout << "\t>>\n";
+        std::cout << "\t\\layout { indent = 0\\cm }\n}\n";
     } else std::cout << trans;
 }
 
@@ -420,7 +436,7 @@ int main(int argc, char *argv[]) {
                     else
                         std::cerr << rest << std::endl;
                 }
-                output_transitions(trans, prep_scheme, lily);
+                output_transitions(trans, prep_scheme, lily, true);
             }
         } else std::cerr << "Error: task --transitions requires at least two distinct chords" << std::endl;
     } else if (task == 5) { // generate classes of elementary transitions
@@ -434,7 +450,7 @@ int main(int argc, char *argv[]) {
                 if (verbose)
                     std::cerr << "Found " << trans.size() << " transition types for "
                               << chords.size() << " chords " << chords << std::endl;
-                output_transitions(trans, prep_scheme, lily);
+                output_transitions(trans, prep_scheme, lily, false);
             }
         } else std::cerr << "Error: at least two chords must be specified" << std::endl;
     } else assert(false);

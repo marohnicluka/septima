@@ -29,6 +29,10 @@ const char* Chord::symbols[] = {
     "d7", "hdim7", "m7", "maj7", "dim7", "Ger6+", "TC"
 };
 
+const char* Chord::note_names[] = {
+    "c", "cis", "d", "es", "e", "f", "fis", "g", "as", "a", "bes", "b"
+};
+
 Chord::Chord() {
     _root = 0;
     _type = -1;
@@ -146,6 +150,34 @@ std::string Chord::to_tex() const {
         break;
     case DIMINISHED_SEVENTH:
         ss << "^{\\mathrm{o}7}";
+        break;
+    default:
+        assert(false);
+    }
+    return ss.str();
+}
+
+std::string Chord::to_lily(int duration) const {
+    std::stringstream ss;
+    ss << note_names[root()];
+    if (duration > 0)
+        ss << duration;
+    ss << ":";
+    switch (type()) {
+    case DOMINANT_SEVENTH:
+        ss << "7";
+        break;
+    case HALF_DIMINISHED_SEVENTH:
+        ss << "m7.5-";
+        break;
+    case MINOR_SEVENTH:
+        ss << "m7";
+        break;
+    case MAJOR_SEVENTH:
+        ss << "maj7";
+        break;
+    case DIMINISHED_SEVENTH:
+        ss << "dim7";
         break;
     default:
         assert(false);

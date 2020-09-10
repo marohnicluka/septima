@@ -56,6 +56,7 @@ public:
     bool operator !=(const Chord &other) const;
     static const int structure[][3];
     static const char *symbols[];
+    static const char *note_names[];
 
     int root() const;
     /* returns the root pitch class of this chord */
@@ -88,16 +89,19 @@ public:
     /* returns the value of voice-leading efficiency metric (Harasim et.al, 2016) */
 
     std::string to_string() const;
-    /* returns the string representation */
+    /* returns a string representation */
 
     std::string to_tex() const;
-    /* returns the LaTeX label (for math mode) */
+    /* returns LaTeX label (for math mode) */
+
+    std::string to_lily(int duration = 0) const;
+    /* returns Lilypond chord notation */
 
     std::set<int> pitch_class_set() const;
     /* returns the integer representation */
 
     Chord structural_inversion() const;
-    /* returns the structural inversion */
+    /* returns the structural inversion about pc 2 (tone D) */
 
     static std::vector<Chord> make_sequence_from_symbols(const char* symbols[], int len);
     /* returns the sequence of chords from array of chord symbols of length len */
