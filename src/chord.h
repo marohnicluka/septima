@@ -43,7 +43,8 @@ class Chord {
 
     int _root;
     int _type;
-    static void set_differences(std::set<int> &pc1, std::set<int> &pc2, std::vector<int> &X, std::vector<int> &Y);
+    static void remove_intersection(std::set<int> &pc1, std::set<int> &pc2);
+    static std::vector<int> set2vector(const std::set<int> &s);
 
 public:
     Chord();

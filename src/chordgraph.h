@@ -77,6 +77,9 @@ public:
     const std::set<Transition> &transitions(glp_arc *a) const;
     /* returns the list transitions corresponding to a */
 
+    const std::set<Transition> &transitions(int i, int j) const;
+    /* returns the list transitions corresponding to the arc (i,j) */
+
     int find_vertex_by_chord(const Chord &c) const;
     /* returns the index of the vertex corresponding to c, or 0 if no such vertex exists in this graph */
 
@@ -105,13 +108,18 @@ public:
     /* computes the closeness centrality for the i-th vertex */
 
     double betweenness_centrality(int i, const pathmap &path_map) const;
-    /* computes the betweenness centrality for the i-th vertex */
+    /* computes the betweenness centrality for the i-th vertex
+     *  - path_map is returned by all_shortest_paths routine
+     */
 
     double communicability_betweenness_centrality(int k) const;
     /* computes the communicability betweenness centrality for the k-th vertex */
 
-    double katz_centrality(int k, bool rev = false) const;
-    /* computes the Katz centrality for the k-th vertex */
+    double katz_centrality(int k, bool rev = false, double q = 0.9) const;
+    /* computes the Katz centrality for the k-th vertex
+     *  - if rev = true, then centrality is computed as coming into the vertex, otherwise as going out of it
+     *  - q is the number such that 0 < q < 1, it is a multiplier for 1/lambda, where lambda is the greatest eigenvalue
+     */
 
     void find_fixed_length_paths(int src, int dest, int len, int limit, std::vector<ivector> &paths);
     /* finds at most k=limit paths of length len from src to dest */

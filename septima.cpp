@@ -18,8 +18,8 @@
  * along with Septima.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "lib/chordgraph.h"
-#include "lib/transitionnetwork.h"
+#include "src/chordgraph.h"
+#include "src/transitionnetwork.h"
 #include <glpk.h>
 #include <assert.h>
 #include <string.h>
@@ -36,6 +36,7 @@ static void show_usage(std::string name) {
               << " -cg,--chord-graph        Create chord graph from chords\n"
               << " -v, --voicing            Output an optimal voicing for the given chord sequence\n"
               << " -av,--all-voicings       Output all optimal voicings for the given chord sequence\n"
+              << " -mn,--Pmn-relations      Output all (m,n) such that the given two chords are Pmn-related\n"
               << "Options:\n"
               << " -c, --class              Specify upper bound for voice-leading infinity norm\n"
               << " -dg,--degree             Specify degree of elementary transitions\n"
@@ -61,7 +62,7 @@ static void output_transitions(const std::vector<Transition> &trans, Preparation
                   << "\\paper {\n\toddFooterMarkup = ##f\n\t#(include-special-characters)\n}\n"
                   << "\\score {\n";
         if (full_chord_names) {
-            tab = "\t\t\t";
+            tab += "\t";
             std::cout << "\t<<\n\t\t\\new ChordNames \\chordmode{\n";
             for (std::vector<Transition>::const_iterator it = trans.begin(); it !=trans.end(); ++it) {
                 std::cout << tab << "s1 " << it->second().chord().to_lily(1) << "\n";
@@ -123,6 +124,8 @@ int main(int argc, char *argv[]) {
                 task = 4;
             } else if (arg == "-tc" || arg == "--transition-classes") {
                 task = 5;
+            } else if (arg == "-mn" || arg == "--Pmn-relations") {
+                task = 6;
             } else {
                 std::cerr << "Error: invalid task specification" << std::endl;
                 return 1;
@@ -305,6 +308,8 @@ int main(int argc, char *argv[]) {
         std::string line;
         std::stringstream ss;
         while (std::getline(ifs, line)) {
+            if (line.front() == '#')
+                continue;
             if (ss.str().size() > 0)
                 ss << " ";
             ss << line;
@@ -453,6 +458,24 @@ int main(int argc, char *argv[]) {
                 output_transitions(trans, prep_scheme, lily, false);
             }
         } else std::cerr << "Error: at least two chords must be specified" << std::endl;
+    } else if (task == 6) {
+        if (chords.size() == 2 && chords.front() != chords.back()) {
+            const Chord &c1 = chords.front(), &c2 = chords.back();
+            std::set<ipair> pmn = c1.Pmn_relations(c2);
+            if (pmn.empty()) {
+                if (verbose)
+                    std::cerr << "Chords " << c1 << " and " << c2 << " are not Pmn-related" << std::endl;
+            } else {
+                if (verbose)
+                    std::cerr << "Found " << pmn.size() << " Pmn-relations" << std::endl;
+                for (std::set<ipair>::const_iterator it = pmn.begin(); it != pmn.end(); ++it) {
+                    std::cout << *it << std::endl;
+                }
+            }
+        } else {
+            std::cerr << "Error: task -mn requires exactly two distinct chords" << std::endl;
+            return (1);
+        }
     } else assert(false);
     return 0;
 }

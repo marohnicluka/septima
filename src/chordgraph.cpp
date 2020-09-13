@@ -78,7 +78,12 @@ bool ChordGraph::allows_augmented_sixths() const {
 }
 
 const std::set<Transition> &ChordGraph::transitions(glp_arc *a) const {
+    assert(a != NULL);
     return transition_map.at(a);
+}
+
+const std::set<Transition> &ChordGraph::transitions(int i, int j) const {
+    return transitions(arc(i, j));
 }
 
 int ChordGraph::find_vertex_by_chord(const Chord &c) const {
@@ -205,19 +210,18 @@ double::ChordGraph::communicability_betweenness_centrality(int k) const {
     return ret / m;
 }
 
-double ChordGraph::katz_centrality(int k, bool rev) const {
+double ChordGraph::katz_centrality(int k, bool rev, double q) const {
     Matrix A = adjacency_matrix();
-    double max_eigval = -1, d;
+    double max_eigval = 0, d;
     std::vector<std::pair<double,double> > ev = A.eigenvalues();
     for (std::vector<std::pair<double,double> >::const_iterator it = ev.begin(); it != ev.end(); ++it) {
         d = sqrt(it->first * it->first + it->second * it->second);
         if (d > max_eigval)
             max_eigval = d;
     }
-    if (d == 0)
+    if (max_eigval == 0)
         return DBL_MAX;
-    double r = 1.0 / d, frac = 0.9;
-    double lambda = r * frac;
+    double lambda = q / max_eigval;
     A.scale(-lambda);
     Matrix B = Matrix::identity(A.size());
     B.add(A);

@@ -208,9 +208,7 @@ Chord Chord::structural_inversion() const {
     return Chord(r, t);
 }
 
-void Chord::set_differences(std::set<int> &pc1, std::set<int> &pc2, std::vector<int> &X, std::vector<int> &Y) {
-    X.clear();
-    Y.clear();
+void Chord::remove_intersection(std::set<int> &pc1, std::set<int> &pc2) {
     std::set<int> intr;
     for (std::set<int>::const_iterator it = pc1.begin(); it != pc1.end(); ++it) {
         if (pc2.find(*it) != pc2.end())
@@ -220,18 +218,21 @@ void Chord::set_differences(std::set<int> &pc1, std::set<int> &pc2, std::vector<
         pc1.erase(*it);
         pc2.erase(*it);
     }
-    for (std::set<int>::const_iterator it = pc1.begin(); it != pc1.end(); ++it) {
-        X.push_back(*it);
+}
+
+std::vector<int> Chord::set2vector(const std::set<int> &s) {
+    std::vector<int> ret;
+    ret.reserve(s.size());
+    for (std::set<int>::const_iterator it = s.begin(); it != s.end(); ++it) {
+        ret.push_back(*it);
     }
-    for (std::set<int>::const_iterator it = pc2.begin(); it != pc2.end(); ++it) {
-        Y.push_back(*it);
-    }
+    return ret;
 }
 
 std::set<ipair> Chord::Pmn_relations(const Chord &other) const {
     std::set<int> pc1 = this->pitch_class_set(), pc2 = other.pitch_class_set();
-    std::vector<int> X, Y, p;
-    set_differences(pc1, pc2, X, Y);
+    remove_intersection(pc1, pc2);
+    std::vector<int> p, X = set2vector(pc1), Y = set2vector(pc2);
     int n = X.size();
     for (int k = 0; k < n; ++k) {
         p.push_back(k);
@@ -260,8 +261,8 @@ std::set<ipair> Chord::Pmn_relations(const Chord &other) const {
 
 int Chord::vl_efficiency_metric(const Chord &other) const {
     std::set<int> pc1 = this->pitch_class_set(), pc2 = other.pitch_class_set();
-    std::vector<int> X, Y, p;
-    set_differences(pc1, pc2, X, Y);
+    remove_intersection(pc1, pc2);
+    std::vector<int> X = set2vector(pc1), Y = set2vector(pc2), p;
     int n = X.size();
     for (int k = 0; k < n; ++k) {
         p.push_back(k);
@@ -282,6 +283,7 @@ int Chord::vl_efficiency_metric(const Chord &other) const {
 
 std::vector<Chord> Chord::make_sequence_from_symbols(const char* symbols[], int len) {
     std::vector<Chord> seq;
+    seq.reserve(len);
     for (int i = 0; i < len; ++i) {
         seq.push_back(Chord(symbols[i]));
     }
@@ -330,6 +332,7 @@ std::vector<Chord> Chord::diminished_seventh_chords() {
 
 std::vector<Chord> Chord::all_seventh_chords() {
     std::vector<Chord> lst;
+    lst.reserve(51);
     std::vector<Chord> dom = dominant_seventh_chords();
     std::vector<Chord> hdim = half_diminished_seventh_chords();
     std::vector<Chord> min = minor_seventh_chords();

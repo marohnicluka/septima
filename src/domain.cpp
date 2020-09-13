@@ -74,7 +74,7 @@ Domain Domain::parse(char *spec) {
             size_t i = 0, len = strlen(num);
             for (; i < len; ++i) {
                 if (num[i] == ':') {
-                    num[i] == '\0';
+                    num[i] = '\0';
                     break;
                 }
             }

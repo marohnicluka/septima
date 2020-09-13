@@ -35,7 +35,7 @@ To compile the library, type `make`.
 Optional dependencies are installed by typing:
 
 ```
-sudo apt-get install -y texlive-latex-recommended dot2tex poppler-utils giac
+sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
 ```
 
 #### Documentation
@@ -68,6 +68,7 @@ On a Linux machine, the executable is called from terminal like this:
 - `-cg`, `--chord-graph` &mdash; Create chord graph from a set of chords.
 - `-v`, `--voicing` &mdash; Find an optimal voicing for the given chord sequence.
 - `-av`, `--all-voicings` &mdash; Find all optimal voicings for the given chord sequence.
+- `-mn`, `--Pmn-relations` &mdash; Output all pairs (*m*,*n*) such that the given two chords are *Pₘₙ*-related.
 
 #### Options
 - `-c`, `--class` &mdash; Specify upper bound for voice-leading infinity norm. Default: 7.
@@ -86,9 +87,17 @@ On a Linux machine, the executable is called from terminal like this:
 
 #### Entering chords
 
-Chords are entered using symbols in form `<root>:<quality>`. Root is one of the integers 0,1,…,11, which represent pitch classes. Quality is either `d7` (dominant seventh), `hdim7` (half-diminished seventh), `m7` (minor seventh), `maj7` (major seventh), or `dim7` (diminished seventh). Optionally, root can be left unspecified (in that case the colon is also not entered), in which case all seventh chords of the given quality are generated. For example, `dim7` is equivalent to `0:dim7 1:dim7 2:dim7` (there are 3 diminished seventh chords in total).
+Chords are entered using symbols in form *root*:*quality*. *root* is one of the integers 0,1,…,11, which represent pitch classes. *quality* is either
 
-Septima can also read chords from a file. Chords are entered using the same syntax as above and they are separated by either spaces, tabs, newlines, commas, or semicolons. These delimiters may be combined.
+- **d7** (dominant seventh),
+- **hdim7** (half-diminished seventh),
+- **m7** (minor seventh),
+- **maj7** (major seventh), or
+- **dim7** (diminished seventh).
+
+Optionally, *root* can be left unspecified (in that case the colon is also not entered), in which case all seventh chords of the given *quality* are generated. For example, `dim7` is equivalent to `0:dim7 1:dim7 2:dim7` (there are 3 diminished seventh chords in total).
+
+Septima can also read chords from a file. Chords are entered using the same syntax as above and they are separated by either spaces, tabs, newlines, commas, or semicolons. These delimiters may be combined. Lines starting with the character # are ignored, thereby providing a way to write comments in the file.
 
 ## Examples
 
@@ -229,3 +238,27 @@ Recommended key signature: 2 sharps
 ```
 
 Note that the program also prints the recommended key signature at the end.
+
+To find all optimal voicings, enter:
+
+```
+./septima -av -aa -w 1.0 1.75 0.2 sequences/Wagner1.seq
+```
+
+Output:
+
+```
+Using GLPK 4.65
+Finding optimal voicing for the sequence [5:hdim7,4:d7,8:hdim7,7:d7,2:hdim7,11:d7]
+Found 1 voicing(s)
+
+Voicing #1:
+D#-F-G#-B
+D-E-G#-B
+D-F#-G#-B
+D-F-G-B
+D-F-Ab-C
+D#-F#-A-B
+```
+
+The result shows that there is a unique optimal voicing.
