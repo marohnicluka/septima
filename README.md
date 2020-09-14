@@ -34,7 +34,7 @@ Optional dependencies are installed by typing:
 sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
 ```
 
-#### Library
+#### Compilation
 
 To compile the library, enter:
 
@@ -44,9 +44,9 @@ make
 sudo make install
 ```
 
-This installs the library and septima application in /usr/local. To change the installation directory, use the option `--prefix=<path>` when running the configure script.
+This installs the library and septima application in `/usr/local` by default. To change the installation directory, use the option `--prefix=<path>` when running the configure script.
 
-#### Documentation
+#### Creating offline documentation
 
 To convert this file to PDF, use [Grip](https://pypi.org/project/grip/):
 
