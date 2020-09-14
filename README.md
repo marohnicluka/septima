@@ -44,7 +44,7 @@ make
 sudo make install
 ```
 
-This installs the library and septima application in /usr/local. To change the installation directory, use the option `--prefix=&lt;path&gt;` when running the configure script.
+This installs the library and septima application in /usr/local. To change the installation directory, use the option `--prefix=<path>` when running the configure script.
 
 #### Documentation
 
