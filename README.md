@@ -3,16 +3,18 @@
 ## Introduction
 
 ### Overview
-Septima is a C++ library for exploring tonal relations between seventh chords.
+Septima is a C++ library for exploring parsimonious diatonic/chromatic relations between seventh chords as well as seventh-chord networks and sequences based on these relations.
 
-#### Features
+#### Main features
 * generating elementary transitions between seventh chords
 * creating chord networks
 * finding optimal voicings for sequences of seventh chord symbols
 
 A command-line interface is provided for using the above key features from a terminal.
 
-### Dependencies
+### Installation
+
+#### Dependencies
 1. GCC
 2. Standard Template Library (STL)
 2. GNU Linear Programming Kit ([GLPK](https://www.gnu.org/software/glpk/))
@@ -20,23 +22,21 @@ A command-line interface is provided for using the above key features from a ter
 
 It is recommended (but not required) that [Lilypond](https://www.lilypond.org) and [Graphviz](https://graphviz.org/) are installed on your system.
 
-### Installation
-
-#### Library
-
 In Ubuntu, mandatory dependencies can be installed by typing:
 
 ```
 sudo apt-get install -y build-essential libglpk-dev libgsl-dev
 ```
 
-To compile the library, type `make`.
-
 Optional dependencies are installed by typing:
 
 ```
 sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
 ```
+
+#### Library
+
+To compile the library, type `make`.
 
 #### Documentation
 
