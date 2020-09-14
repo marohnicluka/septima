@@ -3,7 +3,6 @@ CFLAGS=-I. -Wall
 LIBDIR=lib
 SRCDIR=src
 BUILDDIR=obj
-PREFIX=/usr/local
 MKDIR_P=mkdir -p
 SRC=chord.cpp chordgraph.cpp matrix.cpp realization.cpp tone.cpp transition.cpp transitionnetwork.cpp digraph.cpp domain.cpp
 OBJ=$(SRC:%.cpp=$(BUILDDIR)/%.o)
@@ -24,7 +23,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
 	
 $(PROGRAM): $(OBJ)
 	$(CC) -c -o $@.o $@.cpp $(CFLAGS)
-	$(CC) -o $@ $@.o $^ $(CFLAGS) $(LIBS)
+	$(CC) $(DBG) -o $@ $@.o $^ $(CFLAGS) $(LIBS)
 	$(CC) -shared -o $(LIBDIR)/lib$@.so $^ $(LIBS)
 
 clean:
