@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
       assert(!tr.empty());
       double min_ls = DBL_MAX;
       for (std::set<Transition>::const_iterator it = tr.begin(); it != tr.end(); ++it) {
-        double ls = it->lof_spread();
+        double ls = (1.0 + it->directional_vl_shift()) / it->vl_shift();
         if (min_ls > ls)
           min_ls = ls;
       }

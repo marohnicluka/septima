@@ -319,13 +319,14 @@ void Digraph::yen(int src, int dest, int K, double lb, double ub, std::vector<iv
 ivector Digraph::dijkstra(int src, int dest) {
     assert(src > 0 && src <= G->nv && (dest == 0 || (dest > 0 && dest <= G->nv)));
     assert(vdata(G->v[src])->active && (dest == 0 || vdata(G->v[dest])->active));
-    int i, k;
+    int i;
     ivector Q;
+    ivector::const_iterator it, it_min;
     Q.reserve(G->nv);
     std::vector<bool> popped(G->nv+1, false);
     glp_vertex *u, *v;
     glp_arc *a;
-    double mindist, alt;
+    double mindist, alt, d;
     for (i = 1; i <= G->nv; ++i) {
         v = G->v[i];
         if (!vdata(v)->active)
@@ -336,14 +337,19 @@ ivector Digraph::dijkstra(int src, int dest) {
     }
     while (!Q.empty()) {
         u = NULL;
-        for (ivector::const_iterator it = Q.begin(); it!=Q.end(); ++it) {
-            if (u == NULL || vdata(G->v[*it])->dist < mindist) {
+        it_min = Q.end();
+        mindist = DBL_MAX;
+        for (it = Q.begin(); it != Q.end(); ++it) {
+            d = vdata(G->v[*it])->dist;
+            if (d < mindist) {
                 u = G->v[*it];
-                mindist = vdata(u)->dist;
-                k = (int)(it - Q.begin());
+                mindist = d;
+                it_min = it;
             }
         }
-        Q.erase(Q.begin() + k);
+        if (it_min == Q.end())
+            return ivector(0);
+        Q.erase(it_min);
         if (u->i == dest)
             return get_path(dest);
         popped[u->i] = true;
@@ -366,6 +372,8 @@ ivector Digraph::dijkstra(int src, int dest) {
 }
 
 ivector Digraph::get_path(int dest) const {
+    if (vdata(G->v[dest])->parent == 0)
+        return ivector(0);
     ivector path;
     int i = dest;
     while(i > 0) {
