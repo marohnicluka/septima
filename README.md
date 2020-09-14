@@ -107,18 +107,6 @@ Optionally, *root* can be left unspecified (in that case the colon is also not e
 
 Septima can also read chords from a file. Chords are entered using the same syntax as above and they are separated by either spaces, tabs, newlines, commas, or semicolons. These delimiters may be combined. Lines starting with the character # are ignored, thereby providing a way to write comments in the file.
 
-## Using Septima in C++ projects
-
-After a successful compilation, the Septima shared library will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. Septima headers contain brief descriptions of implemented methods.
-
-An example application **genprog** is provided in `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, together with an optional positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by Kochavi, 2008). The program then finds first *n* cheapest paths from *c* to *d* and outputs them to *stdout*.
-
-The application is compiled by typing:
-
-```
-g++ -o genprog genprog.cpp -lseptima
-```
-
 ## Examples
 
 ### Transitions
@@ -282,3 +270,15 @@ D#-F#-A-B
 ```
 
 The result shows that there is a unique optimal voicing.
+
+## Using Septima in C++ projects
+
+After a successful compilation, the Septima shared library will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. Septima headers contain brief descriptions of implemented methods.
+
+An example application **genprog** is provided in `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, together with an optional positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by Kochavi, 2008). The program then finds first *n* cheapest paths from *c* to *d* and outputs them to *stdout*.
+
+The application is compiled by typing:
+
+```
+g++ -o genprog genprog.cpp -lseptima
+```
