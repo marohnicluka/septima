@@ -36,7 +36,15 @@ sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
 
 #### Library
 
-To compile the library, type `make`.
+To compile the library, enter:
+
+```
+./configure
+make
+sudo make install
+```
+
+This installs the library and septima application in /usr/local. To change the installation directory, use the option `--prefix=&lt;path&gt;` when running the configure script.
 
 #### Documentation
 
