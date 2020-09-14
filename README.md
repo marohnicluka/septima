@@ -109,16 +109,15 @@ Septima can also read chords from a file. Chords are entered using the same synt
 
 ## Using Septima in C++ projects
 
-After a successful compilation, the Septima shared library will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. An example application `genprog` is provided in `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, together with an optional positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, as defined by Kochavi (2008). The program then finds first *n* cheapest paths from *c* to *d* and outputs them on stdout.
+After a successful compilation, the Septima shared library will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. Septima headers contain brief descriptions of implemented methods.
+
+An example application **genprog** is provided in `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, together with an optional positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by Kochavi, 2008). The program then finds first *n* cheapest paths from *c* to *d* and outputs them to *stdout*.
 
 The application is compiled by typing:
 
 ```
 g++ -o genprog genprog.cpp -lseptima
 ```
-
-
-Septima headers contain brief descriptions of implemented methods.
 
 ## Examples
 
