@@ -34,9 +34,9 @@ Optional dependencies are installed by typing:
 sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
 ```
 
-#### Compilation
+#### Build & install Septima
 
-To compile and install the library, enter:
+Septima is packaged as a library and command-line tool (CLT). To build and install these components, enter:
 
 ```
 ./configure
@@ -44,7 +44,7 @@ make
 sudo make install
 ```
 
-This installs the library and septima application in `/usr/local` by default. To change the installation directory, use the option `--prefix=<path>` when running the configure script, for example:
+This installs the library and CLT in `/usr/local` by default. To change the installation directory, use the option `--prefix=<path>` when running the configure script, for example:
 
 ```
 ./configure --prefix=/home/luka/.local
@@ -65,11 +65,11 @@ Then click `http://localhost:xxxx/` which opens the rendering in browser. Print 
 
 ## Command-line interface
 
-After a successful compilation, executable `septima` will appear in `<prefix>/bin`, by default `/usr/local/bin`.
+After a successful installation, command-line application called `septima` will appear in `<prefix>/bin`, by default `/usr/local/bin`.
 
 ### Usage
 
-On a Linux machine, the executable is called from terminal like this:
+On a Linux machine, CLT is called from terminal like this:
 
 ```
 septima <task> [<option(s)>] CHORDS or FILE
@@ -279,7 +279,7 @@ The result shows that there is a unique optimal voicing.
 
 ## Using Septima in C++ projects
 
-After a successful compilation, the shared library `libseptima.so` will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. The headers contain brief descriptions of the implemented routines.
+After a successful installation, the shared library `libseptima.so` will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. The headers contain brief descriptions of the implemented routines.
 
 An example application **genprog**, which uses Septima, is provided in the `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, optionally with a positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions *T* from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by [Kochavi, 2008](https://works.swarthmore.edu/fac-music/58/)). The program then finds first *n* cheapest paths from *c* to *d* and prints them on the standard output.
 
