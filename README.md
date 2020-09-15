@@ -36,7 +36,7 @@ sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
 
 #### Compilation
 
-To compile the library, enter:
+To compile and install the library, enter:
 
 ```
 ./configure
@@ -273,9 +273,9 @@ The result shows that there is a unique optimal voicing.
 
 ## Using Septima in C++ projects
 
-After a successful compilation, the Septima shared library will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. Septima headers contain brief descriptions of implemented methods.
+After a successful compilation, the shared library `libseptima.so` will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. The headers contain brief descriptions of implemented methods.
 
-An example application **genprog** is provided in `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, together with an optional positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by [Kochavi, 2008](https://works.swarthmore.edu/fac-music/58/)). The program then finds first *n* cheapest paths from *c* to *d* and outputs them to *stdout*.
+An example application **genprog** is provided in `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, together with an optional positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions *T* from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by [Kochavi, 2008](https://works.swarthmore.edu/fac-music/58/)). The program then finds first *n* cheapest paths from *c* to *d* and outputs them to *stdout*.
 
 The application is compiled by typing:
 

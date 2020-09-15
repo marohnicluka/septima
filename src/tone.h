@@ -54,7 +54,7 @@ public:
     /* returns the number of accidental modifiers (sharps if positive, flats if negative, 0 means natural) */
 
     ipair interval(const Tone &other) const;
-    /* computes the interval between this tone and the other */
+    /* computes the interval from this tone to other */
 
     Tone structural_inversion() const;
     /* returns the structural inversion */

@@ -142,6 +142,12 @@ public:
     int augmented_count(bool tristan = false) const;
     /* returns the number of augmented-sixth realizations in this transition */
 
+    int generic_vl_type() const;
+    /* returns an integer in {-3,-2,-1,0,1,2,3} which indicates the number of voices which move stepwise
+     *  - if the return value is negative number k, it means that |k| voices move down by a step
+     *  - if the return value is positive number k, it means that k voices move up by a step
+     */
+
     int vl_shift() const;
     /* returns the total voice-leading shift (Kochavi 2008) */
 

@@ -444,10 +444,14 @@ int main(int argc, char *argv[]) {
                 output_transitions(trans, prep_scheme, lily, true);
             }
         } else std::cerr << "Error: task --transitions requires at least two distinct chords" << std::endl;
-    } else if (task == 5) { // generate classes of elementary transitions
+    } else if (task == 5) { // generate structural classes of elementary transitions
         if (chords.size() > 1) {
             std::vector<Transition> trans = Transition::elementary_types(chords, cls, prep_scheme, z, aug, respell);
             isolate_degree(trans, deg);
+            std::map<int,int> vl_types;
+            for (std::vector<Transition>::const_iterator it = trans.begin(); it != trans.end(); ++it) {
+                ++vl_types[prep_scheme == NO_PREPARATION ? abs(it->generic_vl_type()) : it->generic_vl_type()];
+            }
             if (trans.empty()) {
                 if (verbose)
                     std::cerr << "No transitions found for chords " << chords << std::endl;
@@ -456,6 +460,13 @@ int main(int argc, char *argv[]) {
                     std::cerr << "Found " << trans.size() << " transition types for "
                               << chords.size() << " chords " << chords << std::endl;
                 output_transitions(trans, prep_scheme, lily, false);
+                if (verbose) {
+                    std::cout << "\nStatistics:" << std::endl;
+                    for (std::map<int,int>::const_iterator it = vl_types.begin(); it != vl_types.end(); ++it) {
+                        std::cout << "Exactly " << it->first << " voice(s) move stepwise in "
+                                  << it->second << " transitions" << std::endl;
+                    }
+                }
             }
         } else std::cerr << "Error: at least two chords must be specified" << std::endl;
     } else if (task == 6) {

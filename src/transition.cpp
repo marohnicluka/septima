@@ -383,6 +383,18 @@ int Transition::augmented_count(bool tristan) const {
     return cnt;
 }
 
+int Transition::generic_vl_type() const {
+    int g = 0, m;
+    for (int i = 0; i < 4; ++i) {
+        m = first().tone(i).interval(second().tone(i)).first;
+        g += m;
+    }
+    g = Tone::modb(g, 7);
+    if (g > 3)
+        g -= 7;
+    return g;
+}
+
 int Transition::vl_shift() const {
     int pd = 0;
     for (int i = 0; i < 4; ++i) {
