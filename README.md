@@ -36,7 +36,7 @@ sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
 
 #### Build & install Septima
 
-Septima is packaged as a library and command-line tool (CLT). To build and install these components, enter:
+Septima is packaged as a library and command-line tool (CLT). To build and install these components using a Linux terminal, enter:
 
 ```
 ./configure
@@ -69,7 +69,7 @@ After a successful installation, command-line application called `septima` will 
 
 ### Usage
 
-On a Linux machine, CLT is called from terminal like this:
+The command-line tool is called from terminal like this:
 
 ```
 septima <task> [<option(s)>] CHORDS or FILE
