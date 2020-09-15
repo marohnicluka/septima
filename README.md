@@ -3,14 +3,14 @@
 ## Introduction
 
 ### Overview
-Septima is a C++ library for exploring parsimonious diatonic/chromatic relations between seventh chords as well as seventh-chord networks and sequences based on these relations.
+Septima is a C++ library for investigating parsimonious diatonic/chromatic relations between seventh chords as well as seventh-chord networks and sequences based on these relations.
 
 #### Main features
 * generating elementary transitions between seventh chords
 * creating chord networks
 * finding optimal voicings for sequences of seventh chord symbols
 
-A command-line interface is provided for using the above key features from a terminal.
+A command-line interface is provided for using the above features from a terminal.
 
 ### Installation
 
@@ -20,7 +20,7 @@ A command-line interface is provided for using the above key features from a ter
 2. GNU Linear Programming Kit ([GLPK](https://www.gnu.org/software/glpk/))
 3. GNU Scientific Library ([GSL](https://www.gnu.org/software/gsl/))
 
-It is recommended (but not required) that [Lilypond](https://www.lilypond.org) and [Graphviz](https://graphviz.org/) are installed on your system.
+It is recommended (albeit not required) that [Lilypond](https://www.lilypond.org) and [Graphviz](https://graphviz.org/) are installed on your system.
 
 In Ubuntu, mandatory dependencies can be installed by typing:
 
@@ -44,7 +44,13 @@ make
 sudo make install
 ```
 
-This installs the library and septima application in `/usr/local` by default. To change the installation directory, use the option `--prefix=<path>` when running the configure script.
+This installs the library and septima application in `/usr/local` by default. To change the installation directory, use the option `--prefix=<path>` when running the configure script, for example:
+
+```
+./configure --prefix=/home/luka/.local
+```
+
+In the above case, it is enough to type `make install` instead of calling `sudo`.
 
 #### Creating offline documentation
 
@@ -273,9 +279,9 @@ The result shows that there is a unique optimal voicing.
 
 ## Using Septima in C++ projects
 
-After a successful compilation, the shared library `libseptima.so` will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. The headers contain brief descriptions of implemented methods.
+After a successful compilation, the shared library `libseptima.so` will be available in `<prefix>/lib` and the corresponding header files in `<prefix>/include/septima`. This allows linking the library with other C++ projects. The headers contain brief descriptions of the implemented routines.
 
-An example application **genprog** is provided in `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, together with an optional positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions *T* from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by [Kochavi, 2008](https://works.swarthmore.edu/fac-music/58/)). The program then finds first *n* cheapest paths from *c* to *d* and outputs them to *stdout*.
+An example application **genprog**, which uses Septima, is provided in the `example` directory. It is a command-line application which accepts two chords *c* and *d* as input arguments, optionally with a positive integer *n* which defaults to 10. The program creates chord graph on all seventh chords which are connected if there exists a prepared elementary transition between them (augmented sixths are not allowed). The weight of arc (*c*&#8321;,*c*&#8322;) is equal to the smallest value (1+VLD(*T*))/VL(*T*) among all elementary progressions *T* from *c*&#8321; to *c*&#8322;. Here, VLD(*T*) and VL(*T*) are the directional and absolute voice-leading shift of *T*, respectively (as defined by [Kochavi, 2008](https://works.swarthmore.edu/fac-music/58/)). The program then finds first *n* cheapest paths from *c* to *d* and prints them on the standard output.
 
 The application is compiled by typing:
 
