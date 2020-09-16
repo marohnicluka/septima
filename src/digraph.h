@@ -57,6 +57,7 @@ private:
     bool _dot_tex;
     bool _is_weighted;
     std::map<int,std::string> _vlabels;
+    std::vector<glp_arc*> _arcs;
 
     glp_vertex *store_path(const ivector &path, glp_vertex *root);
 
@@ -122,6 +123,9 @@ public:
     void set_weight(glp_arc *a, double w) const;
     /* sets weight w to arc a (the graph must be weighted) */
 
+    void negate_weights() const;
+    /* multiplies arc weights by -1 */
+
     int in_degree(int i) const;
     /* returns the in-degree for the i-th vertex */
 
@@ -137,13 +141,17 @@ public:
      *  - if K = 0, there is no limit; the algorithm finds all paths in this case
      */
 
-    ivector dijkstra(int src, int dest = 0);
+    void dijkstra(int src, int dest = 0) const;
     /* returns a shortest path from src to dest using Dijkstra's algorithm
-     *  - if dest = 0, then all shortest paths from src are computed and can
-     *    be retrieved by get_path routine (the return value is irrelevant in this case) */
+     *  - if dest = 0, then all shortest paths from src are computed
+     *  - paths are retrieved by get_path */
 
-    ivector get_path(int dest) const;
-    /* returns the shortest path from src to dest as computed by dijkstra(src, 0) */
+    void bellman_ford(int src) const;
+    /* runs Bellman-Ford algorithm for shortest paths from src
+     *  - paths are retrieved by get_path */
+
+    bool get_path(int dest, ivector &path) const;
+    /* returns the shortest path from src to dest as computed by dijkstra(src, 0) or bellman_ford(src) */
 
     double path_weight(const ivector &path) const;
     /* returns the weight of path in this graph */

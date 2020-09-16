@@ -105,23 +105,30 @@ int TransitionNetwork::num_paths() const {
     return _num_paths;
 }
 
-ivector TransitionNetwork::best_path() {
+ivector TransitionNetwork::best_path(bool use_dijkstra) {
     ivector bp, p;
-    double w, min_weight = DBL_MAX;
+    double w, min_weight = 0;
     enable_all_arcs();
     enable_all_vertices();
     for (ivector::const_iterator it = _sources.begin(); it != _sources.end(); ++it) {
-        dijkstra(*it);
+        if (use_dijkstra)
+            dijkstra(*it);
+        else bellman_ford(*it);
         for (ivector::const_iterator jt = _sinks.begin(); jt != _sinks.end(); ++jt) {
-            p = get_path(*jt);
+            get_path(*jt, p);
             w = path_weight(p);
-            if (w < min_weight) {
+            if (min_weight == 0 || w < min_weight) {
                 bp = p;
                 min_weight = w;
             }
         }
     }
     return bp;
+}
+
+ivector TransitionNetwork::worst_path() {
+    negate_weights();
+    return best_path(false);
 }
 
 std::vector<ivector> TransitionNetwork::best_paths(double &theta) {
@@ -188,18 +195,18 @@ ivector TransitionNetwork::compose(const ivector &f1, const ivector &f2) {
     return tmp;
 }
 
-int TransitionNetwork::optimal_voicing(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, voicing &v) {
+int TransitionNetwork::find_voicing(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, voicing &v, bool best) {
     const Chord &c0 = cg.vertex2chord(walk.front());
     Domain dom = cg.support();
-    double w, min_w = DBL_MAX;
+    double w, min_w = 0;
     int best_z;
     std::vector<Realization> R = Realization::tonal_realizations(c0, dom, cg.allows_augmented_sixths());
     for (std::vector<Realization>::const_iterator it = R.begin(); it != R.end(); ++it) {
         for (int z = dom.lbound(); z <= dom.ubound(); ++z) {
             TransitionNetwork tn(cg, walk, *it, wgh, z);
-            ivector bp = tn.best_path();
+            ivector bp = best ? tn.best_path() : tn.worst_path();
             w = tn.path_weight(bp);
-            if (w < min_w) {
+            if (min_w == 0 || w < min_w) {
                 v = tn.realize_path(bp);
                 min_w = w;
                 best_z = z;
@@ -232,7 +239,7 @@ bool TransitionNetwork::are_voicings_equivalent(const voicing &v1, const voicing
     return true;
 }
 
-std::set<voicing> TransitionNetwork::all_optimal_voicings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh) {
+std::set<voicing> TransitionNetwork::find_all_optimal_voicings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh) {
     const Chord &c0 = cg.vertex2chord(walk.front());
     Domain dom = cg.support();
     double theta;

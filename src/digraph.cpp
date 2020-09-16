@@ -90,6 +90,7 @@ glp_arc *Digraph::add_arc(int i, int j, double w) {
     a = glp_add_arc(G, i, j);
     adata(a)->weight = w;
     ++_num_arcs;
+    _arcs.push_back(a);
     return a;
 }
 
@@ -121,6 +122,13 @@ void Digraph::set_weight(glp_arc *a, double w) const {
     assert(_is_weighted);
     if (a != NULL)
         arc_data(a)->weight = w;
+}
+
+void Digraph::negate_weights() const {
+    assert(_is_weighted);
+    for (std::vector<glp_arc*>::const_iterator it = _arcs.begin(); it != _arcs.end(); ++it) {
+        arc_data(*it)->weight *= -1.0;
+    }
 }
 
 int Digraph::in_degree(int i) const {
@@ -248,12 +256,12 @@ void Digraph::yen(int src, int dest, int K, double lb, double ub, std::vector<iv
     bool has_path;
     double pw, spw;
     if (_is_weighted) {
-        path = dijkstra(src, dest);
-        has_path = !path.empty();
-        pw = path_weight(path);
+        dijkstra(src, dest);
+        if ((has_path = get_path(dest, path)))
+            pw = path_weight(path);
     } else {
-        has_path = bfs(src, dest, path);
-        pw = path.size();
+        if ((has_path = bfs(src, dest, path)))
+            pw = path.size();
     }
     if (!has_path || (ub > 0 && pw > ub))
         return;
@@ -280,14 +288,12 @@ void Digraph::yen(int src, int dest, int K, double lb, double ub, std::vector<iv
             }
             if (_is_weighted) {
                 pw = path_weight(ivector(path.begin(), path.begin() + i + 1));
-                spur_path = dijkstra(spur_node, dest);
-                has_path = !spur_path.empty();
-                if (has_path)
+                dijkstra(spur_node, dest);
+                if ((has_path = get_path(dest, spur_path)))
                     spw = path_weight(spur_path);
             } else {
                 pw = i;
-                has_path = bfs(spur_node, dest, spur_path);
-                if (has_path)
+                if ((has_path = bfs(spur_node, dest, spur_path)))
                     spw = spur_path.size();
             }
             if (has_path)
@@ -316,7 +322,7 @@ void Digraph::yen(int src, int dest, int K, double lb, double ub, std::vector<iv
     glp_delete_graph(P);
 }
 
-ivector Digraph::dijkstra(int src, int dest) {
+void Digraph::dijkstra(int src, int dest) const {
     assert(src > 0 && src <= G->nv && (dest == 0 || (dest > 0 && dest <= G->nv)));
     assert(vdata(G->v[src])->active && (dest == 0 || vdata(G->v[dest])->active));
     int i;
@@ -347,11 +353,9 @@ ivector Digraph::dijkstra(int src, int dest) {
                 it_min = it;
             }
         }
-        if (it_min == Q.end())
-            return ivector(0);
+        if (it_min == Q.end() || u->i == dest)
+            break;
         Q.erase(it_min);
-        if (u->i == dest)
-            return get_path(dest);
         popped[u->i] = true;
         a = u->out;
         while (a != NULL) {
@@ -368,25 +372,51 @@ ivector Digraph::dijkstra(int src, int dest) {
             a = a->t_next;
         }
     }
-    return ivector(0);
 }
 
-ivector Digraph::get_path(int dest) const {
+void Digraph::bellman_ford(int src) const {
+    int n = G->nv, i;
+    glp_vertex *u, *v;
+    glp_arc *a;
+    double w;
+    for (i = 1; i <= n; ++i) {
+        v = G->v[i];
+        if (!vdata(v)->active)
+            continue;
+        vdata(v)->dist = i == src ? 0 : DBL_MAX;
+        vdata(v)->parent = 0;
+    }
+    for (i = 1; i < n; ++i) {
+        for (std::vector<glp_arc*>::const_iterator it = _arcs.begin(); it != _arcs.end(); ++it) {
+            a = *it;
+            u = a->tail;
+            v = a->head;
+            w = adata(a)->weight;
+            if (vdata(u)->dist + w < vdata(v)->dist) {
+                vdata(v)->dist = vdata(u)->dist + w;
+                vdata(v)->parent = u->i;
+            }
+        }
+    }
+}
+
+bool Digraph::get_path(int dest, ivector &path) const {
     if (vdata(G->v[dest])->parent == 0)
-        return ivector(0);
-    ivector path;
+        return false;
     int i = dest;
+    path.clear();
     while(i > 0) {
         path.push_back(i);
         i = vdata(G->v[i])->parent;
     }
     std::reverse(path.begin(), path.end());
-    return path;
+    return true;
 }
 
 double Digraph::path_weight(const ivector &path) const {
     double ret = 0;
     for (ivector::const_iterator it = path.begin() + 1; it != path.end(); ++it) {
+        assert(arc(*(it - 1), *it) != NULL);
         ret += arc_data(*(it - 1), *it)->weight;
     }
     return ret;

@@ -99,7 +99,8 @@ const Chord &ChordGraph::vertex2chord(int i) const {
     return chord_map.at(i);
 }
 
-bool ChordGraph::best_voicing(const std::vector<Chord> &seq, int &z0, double spread_weight, double vl_weight, double aug_weight, voicing &v) const {
+bool ChordGraph::find_voicing(const std::vector<Chord> &seq, int &z0,
+                              double spread_weight, double vl_weight, double aug_weight, voicing &v, bool best) const {
     ivector walk;
     for (std::vector<Chord>::const_iterator it = seq.begin(); it != seq.end(); ++it) {
         int v = find_vertex_by_chord(*it);
@@ -111,11 +112,11 @@ bool ChordGraph::best_voicing(const std::vector<Chord> &seq, int &z0, double spr
     wgh.push_back(spread_weight);
     wgh.push_back(vl_weight);
     wgh.push_back(aug_weight);
-    z0 = TransitionNetwork::optimal_voicing(*this, walk, wgh, v);
+    z0 = TransitionNetwork::find_voicing(*this, walk, wgh, v, best);
     return true;
 }
 
-bool ChordGraph::best_voicings(const std::vector<Chord> &seq, double spread_weight, double vl_weight, double aug_weight, std::set<voicing> &vs) const {
+bool ChordGraph::find_voicings(const std::vector<Chord> &seq, double spread_weight, double vl_weight, double aug_weight, std::set<voicing> &vs) const {
     ivector walk;
     for (std::vector<Chord>::const_iterator it = seq.begin(); it != seq.end(); ++it) {
         int v = find_vertex_by_chord(*it);
@@ -127,7 +128,7 @@ bool ChordGraph::best_voicings(const std::vector<Chord> &seq, double spread_weig
     wgh.push_back(spread_weight);
     wgh.push_back(vl_weight);
     wgh.push_back(aug_weight);
-    vs = TransitionNetwork::all_optimal_voicings(*this, walk, wgh);
+    vs = TransitionNetwork::find_all_optimal_voicings(*this, walk, wgh);
     return true;
 }
 

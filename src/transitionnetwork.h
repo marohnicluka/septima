@@ -52,8 +52,11 @@ public:
     int num_paths() const;
     /* returns the total number of paths from a source to a sink in this network */
 
-    ivector best_path();
+    ivector best_path(bool use_dijkstra = true);
     /* return a cheapest path from source to sink */
+
+    ivector worst_path();
+    /* return a most expensive path from source to sink */
 
     std::vector<ivector> best_paths(double &theta);
     /* returns all cheapest paths from source to sink */
@@ -64,10 +67,10 @@ public:
     static ivector compose(const ivector &f1, const ivector &f2);
     /* returns the composition of two permutations f1 and f2 */
 
-    static int optimal_voicing(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, voicing &v);
+    static int find_voicing(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh, voicing &v, bool best = true);
     /* finds an optimal voicing v for walk in cg and returns its gravity center on the line of fifths */
 
-    static std::set<voicing> all_optimal_voicings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh);
+    static std::set<voicing> find_all_optimal_voicings(const ChordGraph &cg, const ivector &walk, const std::vector<double> &wgh);
     /* returns all optimal voicings for walk in cg */
 
     static void arrange_voices(voicing &v);

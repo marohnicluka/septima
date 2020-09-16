@@ -86,14 +86,17 @@ public:
     const Chord &vertex2chord(int i) const;
     /* returns the reference to chord represented by the i-th vertex */
 
-    bool best_voicing(const std::vector<Chord> &seq, int &z0, double spread_weight, double vl_weight, double aug_weight, voicing &v) const;
-    /* finds an optimal voicing for chord sequence seq of seventh chords, given as a list of names
+    bool find_voicing(const std::vector<Chord> &seq, int &z0,
+                      double spread_weight, double vl_weight, double aug_weight,
+                      voicing &v, bool best = true) const;
+    /* finds a voicing for chord sequence seq of seventh chords, given as a list of names
      *  - returns true iff prog is a walk in this graph
      *  - z0 is the gravity center on the line of fifths
      *  - spread_weight, vl_weight and aug_weight are weight parameters for xi, eta and zeta, respectively
+     *  - if best = true, return optimal voicing, else return worst voicing
      */
 
-    bool best_voicings(const std::vector<Chord> &seq, double spread_weight, double vl_weight, double aug_weight, std::set<voicing> &vs) const;
+    bool find_voicings(const std::vector<Chord> &seq, double spread_weight, double vl_weight, double aug_weight, std::set<voicing> &vs) const;
     /* finds all optimal voicings for chord sequence seq with respect to the given weight parameters
      *  - returns true iff prog is a walk in this graph
      */

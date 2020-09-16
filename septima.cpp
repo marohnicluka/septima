@@ -34,7 +34,7 @@ static void show_usage(std::string name) {
               << " -t, --transitions        Generate transitions from the first seventh chord to the rest\n"
               << " -tc,--transition-classes Generate all structural classes of transitions between seventh chords\n"
               << " -cg,--chord-graph        Create chord graph from chords\n"
-              << " -v, --voicing            Output an optimal voicing for the given chord sequence\n"
+              << " -v, --voicing            Output optimal voicing for the given chord sequence\n"
               << " -av,--all-voicings       Output all optimal voicings for the given chord sequence\n"
               << " -mn,--Pmn-relations      Output all (m,n) such that the given two chords are Pmn-related\n"
               << "Options:\n"
@@ -48,6 +48,7 @@ static void show_usage(std::string name) {
               << " -lf,--label-format       Specify format for chord graph labels\n"
               << " -p, --preparation        Specify preparation scheme for elementary transitions\n"
               << " -w, --weights            Specify weight parameters for voicing algorithm\n"
+              << " -wv,--worst-voicing      Output worst instead of best voicing\n"
               << " -vc,--vertex-centrality  Show centrality measure with each vertex of the chord graph\n"
               << " -ly,--lilypond           Output transitions and voicings in Lilypond code\n"
               << " -cs,--chord-symbols      Print chord symbols above realizations in Lilypond output\n"
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]) {
     }
     int task = 0, deg = 0, cls = 7, z = 0, lily = 0;
     double w1 = 1.0, w2 = 1.75, w3 = 0.25;
-    bool aug = false, faug = false, respell = true, verbose = true, cs = false;
+    bool aug = false, faug = false, respell = true, verbose = true, cs = false, best = true;
     PreparationScheme prep_scheme = NO_PREPARATION;
     std::string label_format = "symbol", vc_format = "none";
     std::string input_filename = "";
@@ -253,6 +254,8 @@ int main(int argc, char *argv[]) {
                 lily = 1;
             } else if (arg == "-cs" || arg == "--chord-symbols") {
                 cs = true;
+            } else if (arg == "-wv" || arg == "--worst-voicing") {
+                best = false;
             } else if (arg == "-q" || arg == "--quiet") {
                 verbose = false;
             } else { // parse chords or file
@@ -371,12 +374,13 @@ int main(int argc, char *argv[]) {
         cg.export_dot("-", is_undirected);
     } else if (task == 2) { // find optimal voicing
         if (verbose)
-            std::cerr << "Finding optimal voicing for the sequence " << chords << std::endl;
+            std::cerr << "Finding " << (best ? "optimal" : "worst") << " voicing for the sequence "
+                      << chords << std::endl;
         std::vector<Chord> all_chords = Chord::all_seventh_chords();
         ChordGraph cg(all_chords, cls, domain, prep_scheme, aug, false, 0, false, false);
         voicing v;
         int z0;
-        if (cg.best_voicing(chords, z0, w1, w2, w3, v)) {
+        if (cg.find_voicing(chords, z0, w1, w2, w3, v, best)) {
                 std::cout << v;
                 if (verbose) {
                     std::cerr << "Recommended key signature: "
@@ -391,7 +395,7 @@ int main(int argc, char *argv[]) {
         ChordGraph cg(all_chords, cls, domain, prep_scheme, aug, false, 0, false, false);
         std::set<voicing> vs;
         int i = 0;
-        if (cg.best_voicings(chords, w1, w2, w3, vs)) {
+        if (cg.find_voicings(chords, w1, w2, w3, vs)) {
             if (verbose)
                 std::cerr << "Found " << vs.size() << " voicing(s)" << std::endl;
             for (std::set<voicing>::const_iterator it = vs.begin(); it != vs.end(); ++it) {
