@@ -256,10 +256,10 @@ Note that the program also prints the recommended key signature at the end.
 To find all optimal voicings, enter:
 
 ```
-septima -av -aa -w 1.0 1.75 0.2 sequences/Wagner1.seq
+septima -av -aa sequences/Wagner1.seq
 ```
 
-Output:
+This command uses default weight parameters for the voicing algorithm. The following output is obtained:
 
 ```
 Using GLPK 4.65
