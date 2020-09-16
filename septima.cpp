@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     int task = 0, deg = 0, cls = 7, z = 0, lily = 0;
-    double w1 = 1.0, w2 = 1.75, w3 = 0.25;
+    double w1 = 1.0, w2 = 1.75, w3 = 0.2;
     bool aug = false, faug = false, respell = true, verbose = true, cs = false, best = true;
     PreparationScheme prep_scheme = NO_PREPARATION;
     std::string label_format = "symbol", vc_format = "none";
