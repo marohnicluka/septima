@@ -234,10 +234,10 @@ The obtained image is shown below. Darker vertices are more important as steppin
 For example, to generate a voicing for the progression F&#216; &#8594; E⁷ &#8594; A&#9837;&#216; &#8594; G⁷ &#8594; D&#216; &#8594; B⁷, which appears at the beginning of Wagner's *Tristan*, enter:
 
 ```
-septima -v -aa -w 1.0 1.75 0.2 sequences/Wagner1.seq
+septima -v -aa sequences/Wagner1.seq
 ```
 
-The penalty for augmented sixths is set to 0.2, which is a bit lower than the defult 0.25. This way Tristan chord is obtained at the beginning. The optimal voicing is output as a sequence of chord realizations.
+This command uses default weight parameters for the voicing algorithm. The optimal voicing is output as a sequence of chord realizations.
 
 ```
 Using GLPK 4.65
@@ -259,7 +259,7 @@ To find all optimal voicings, enter:
 septima -av -aa sequences/Wagner1.seq
 ```
 
-This command uses default weight parameters for the voicing algorithm. The following output is obtained:
+Output:
 
 ```
 Using GLPK 4.65
