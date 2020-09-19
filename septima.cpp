@@ -26,6 +26,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <ctime>
 
 static void show_usage(std::string name) {
     std::cerr << "Usage: " << name << " <task> [<option(s)>] CHORDS or FILE\n"
@@ -33,6 +34,7 @@ static void show_usage(std::string name) {
               << " -h, --help               Show this help message\n"
               << " -t, --transitions        Generate transitions from the first seventh chord to the rest\n"
               << " -tc,--transition-classes Generate all structural classes of transitions between seventh chords\n"
+              << " -ts,--transition-stats   Output voice-leading statistics for the given chords\n"
               << " -cg,--chord-graph        Create chord graph from chords\n"
               << " -v, --voicing            Output optimal voicing for the given chord sequence\n"
               << " -av,--all-voicings       Output all optimal voicings for the given chord sequence\n"
@@ -102,7 +104,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     int task = 0, deg = 0, cls = 7, z = 0, lily = 0;
-    double w1 = 1.0, w2 = 1.75, w3 = 0.2;
+    double w1 = 1.0, w2 = 1.75, w3 = 0.25;
     bool aug = false, faug = false, respell = true, verbose = true, cs = false, best = true;
     PreparationScheme prep_scheme = NO_PREPARATION;
     std::string label_format = "symbol", vc_format = "none";
@@ -121,12 +123,14 @@ int main(int argc, char *argv[]) {
                 task = 2;
             } else if (arg == "-av" || arg == "--all-voicings") {
                 task = 3;
-            } else if (arg == "-t" || arg == "--transitions") {
+            } else if (arg == "-t"  || arg == "--transitions") {
                 task = 4;
             } else if (arg == "-tc" || arg == "--transition-classes") {
                 task = 5;
             } else if (arg == "-mn" || arg == "--Pmn-relations") {
                 task = 6;
+            } else if (arg == "-ts" || arg == "--transition-stats") {
+                task = 7;
             } else {
                 std::cerr << "Error: invalid task specification" << std::endl;
                 return 1;
@@ -198,8 +202,10 @@ int main(int argc, char *argv[]) {
                         prep_scheme = PREPARE_GENERIC;
                     else if (val == "acoustic")
                         prep_scheme = PREPARE_ACOUSTIC;
+                    else if (val == "classical")
+                        prep_scheme = PREPARE_ACOUSTIC_NO_DOMINANT;
                     else {
-                        std::cerr << "Error: invalid preparation scheme specification, expected either 'none', 'generic', or 'acoustic'"
+                        std::cerr << "Error: invalid preparation scheme specification, expected either 'none', 'generic', 'acoustic', or 'classical'"
                                   << std::endl;
                         return 1;
                     }
@@ -356,6 +362,7 @@ int main(int argc, char *argv[]) {
         if (ndup > 0 && verbose)
             std::cerr << "Warning: removed " << ndup << " chord duplicate(s)" << std::endl;
     }
+    std::clock_t clock_start = clock();
     if (task == 1) { // create chord graph
         if (verbose)
             std::cerr << "Creating chord graph for " << chords.size() << " chords..." << std::endl;
@@ -491,6 +498,63 @@ int main(int argc, char *argv[]) {
             std::cerr << "Error: task -mn requires exactly two distinct chords" << std::endl;
             return (1);
         }
+    } else if (task == 7) {
+        if (verbose)
+            std::cerr << "Computing transitions..." << std::endl;
+        std::vector<Transition> trans, lst;
+        for (std::vector<Chord>::const_iterator it = chords.begin(); it != chords.end(); ++it) {
+            for (std::vector<Chord>::const_iterator jt = chords.begin(); jt != chords.end(); ++jt) {
+                if (it == jt)
+                    continue;
+                lst = Transition::elementary_classes(*it, *jt, cls, prep_scheme, z, aug);
+                if (respell)
+                    Transition::simplify_enharmonic_classes(lst);
+                trans.insert(trans.end(), lst.begin(), lst.end());
+            }
+        }
+        for (int i = 0; i < int(trans.size()); ++i) {
+            for (int j = trans.size(); j-->i+1;) {
+                if (trans[i].is_congruent(trans[j]))
+                    trans.erase(trans.begin() + j);
+            }
+        }
+        int total = trans.size(), eff = 0, D, vls, vls_avg = 0;
+        double pde = 0.0;
+        std::map<int,int> vl_map;
+        std::map<ipair,int> vlp_map;
+        ipair mn;
+        for (std::vector<Transition>::const_iterator it = trans.begin(); it != trans.end(); ++it) {
+            D = it->first().chord().vl_efficiency_metric(it->second().chord());
+            vls = it->vl_shift();
+            mn = it->mn_type();
+            ++vl_map[vls];
+            ++vlp_map[mn];
+            vls_avg += vls;
+            if (vls <= D)
+                ++eff;
+            else pde += (vls - D) / (double)D;
+        }
+        double eff_pc = (eff * 100.0) / (double)total;
+        double exc = pde / (double)total;
+        double vlsa = vls_avg / (double)total;
+        std::cout << "Total transitions: " << total << "\n"
+                  << "Efficient transitions: " << eff << " (" << eff_pc << "%)\n"
+                  << "Average voice-leading shift: " << vlsa << " semitones\n"
+                  << "Average relative excess: " << exc * 100.0 << "%\n"
+                  << "Distribution by voice-leading shift:\n";
+        for (std::map<int,int>::const_iterator it = vl_map.begin(); it != vl_map.end(); ++it) {
+            std::cout << it->first << ": " << it->second << "\n";
+        }
+        std::cout << "Distribution over mn-pair types:\n";
+        for (std::map<ipair,int>::const_iterator it = vlp_map.begin(); it != vlp_map.end(); ++it) {
+            std::cout << it->first << ": " << it->second << "\n";
+        }
+        if (verbose)
+            std::cerr << "Done." << std::endl;
     } else assert(false);
+    std::clock_t clock_end = clock();
+    double elapsed_secs = double(clock_end - clock_start) / CLOCKS_PER_SEC;
+    if (verbose)
+        std::cerr << "Time elapsed: " << elapsed_secs << " seconds" << std::endl;
     return 0;
 }

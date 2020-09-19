@@ -6,8 +6,8 @@
 Septima is a C++ library for investigating parsimonious diatonic/chromatic relations between seventh chords as well as seventh-chord networks and sequences based on these relations.
 
 #### Main features
-* generating elementary transitions between seventh chords
-* creating chord networks
+* Generating elementary transitions between seventh chords
+* Creating chord networks
 * finding optimal voicings for sequences of seventh chord symbols
 
 A command-line interface is provided for using the above features from a terminal.
@@ -65,7 +65,7 @@ Then click `http://localhost:xxxx/` which opens the rendering in browser. Print 
 
 ## Command-line interface
 
-After a successful installation, command-line application called `septima` will appear in `<prefix>/bin`, by default `/usr/local/bin`.
+After a successful installation, command-line application `septima` will appear in `<prefix>/bin`, by default `/usr/local/bin`.
 
 ### Usage
 
@@ -79,6 +79,7 @@ septima <task> [<option(s)>] CHORDS or FILE
 - `-h`, `--help` &mdash; Show this help message.
 - `-t`, `--transition` &mdash; Generate transitions from the first seventh chord to the rest.
 - `-tc`, `--transition-classes` &mdash; Generate all structural classes of transitions between seventh chords.
+- `-ts`, `--transition-stats` &mdash; Output voice-leading statistics for the given chords.
 - `-cg`, `--chord-graph` &mdash; Create chord graph from a set of chords.
 - `-v`, `--voicing` &mdash; Find an optimal voicing for the given chord sequence.
 - `-av`, `--all-voicings` &mdash; Find all optimal voicings for the given chord sequence.
@@ -92,7 +93,7 @@ septima <task> [<option(s)>] CHORDS or FILE
 - `-d`, `--domain` &mdash; Specify domain on the line of fifths. It is entered as a comma-separated list of integers. Blocks of several consecutive integers, such as e.g. 1,2,3,4,5, can be entered as 1:5. The default domain is {−15,−14,…,15}, which corresponds to notes from G&#119083; to A&#119082;.
 - `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths. Default: 0, which corresponds to the note D.
 - `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are **symbol**, **number**, and **latex**. Default: **symbol**.
-- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are **none**, **generic** (for preparation of generic sevenths), and **acoustic** (for preparation of acoustic sevenths). Default: *none*.
+- `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are **none**, **generic** (for preparation of generic sevenths), **acoustic** (for preparation of acoustic sevenths), and **classical** (for preparation of only non-dominant seventh chords). Default: **none**.
 - `-w`, `--weights` &mdash; Specify weight parameters for the voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 0.2.
 - `-vc`, `--vertex-centrality` &mdash; Show centrality measure with each vertex of the chord graph. Choices are **none**, **label**, and **color**. Default: **none**.
 - `-ly`, `--lilypond` &mdash; Output transitions and voicings in Lilypond code.
@@ -172,6 +173,54 @@ septima -tc -c 5 -ly -cs d7 hdim7 m7 maj7 >out.ly
 Diatonic voice leading is obtained by setting `-c` option to 5. The following 25 transition types are obtained:
 
 <p align="center"><img src="images/trans_diatonic.png" width="70%"></p>
+
+#### Voice-leading statistics
+
+Septima can perform automatic statistical analysis for the given set of seventh chords. It computes all allowed transitions up to congruence and outputs the following data.
+
+ * total number of transitions
+ * total number of efficient transitions
+ * average voice-leading displacement
+ * average voice-leading excess relative to the efficient voice leadings
+ * distribution of transitions by voice-leading shift
+ * distribution of transitions over *mn*-types (*mn*-type of a transition is a pair of integers indicating amounts of voices that move by semitone resp. by whole tone)
+ 
+For example, to obtain statistics for the complete set of 51 seventh chords (using augmented realizations only when necessary and ignoring the preparation rule), enter:
+
+```
+septima -ts -aa d7 hdim7 m7 maj7 dim7
+```
+
+Output:
+
+```
+Total transitions: 3072
+Efficient transitions: 2928 (95.3125%)
+Average voice-leading shift: 3.79688 semitones
+Average relative excess: 1.875%
+Distribution by voice-leading shift:
+1: 192
+2: 528
+3: 624
+4: 720
+5: 528
+6: 336
+7: 144
+Distribution over mn-pair types:
+(0,1): 72
+(0,2): 48
+(0,3): 72
+(1,0): 192
+(1,1): 240
+(1,2): 192
+(1,3): 144
+(2,0): 456
+(2,1): 312
+(2,2): 264
+(3,0): 384
+(3,1): 336
+(4,0): 360
+```
 
 ### Chord graphs
 
