@@ -181,7 +181,9 @@ Septima can perform automatic statistical analysis for the given set of seventh 
  * total number of transitions
  * total number of efficient transitions
  * average voice-leading displacement
- * average voice-leading excess relative to the efficient voice leadings
+ * average voice-leading excess relative to the efficient voice leading
+ * number of transitions in which common tones are fixed
+ * number of transitions which feature contrary motion
  * distribution of transitions by voice-leading shift
  * distribution of transitions over *mn*-types (*mn*-type of a transition is a pair of integers indicating amounts of voices that move by semitone resp. by whole tone)
  
@@ -194,32 +196,34 @@ septima -ts -aa d7 hdim7 m7 maj7 dim7
 Output:
 
 ```
-Total transitions: 3072
-Efficient transitions: 2928 (95.3125%)
+Total transitions: 1536
+Efficient transitions: 1464 (95.3125%)
 Average voice-leading shift: 3.79688 semitones
 Average relative excess: 1.875%
+Common tones are fixed in 1476 transitions
+Contrary motion occurs in 384 transitions
 Distribution by voice-leading shift:
-1: 192
-2: 528
-3: 624
-4: 720
-5: 528
-6: 336
-7: 144
+1: 96
+2: 264
+3: 312
+4: 360
+5: 264
+6: 168
+7: 72
 Distribution over mn-pair types:
-(0,1): 72
-(0,2): 48
-(0,3): 72
-(1,0): 192
-(1,1): 240
-(1,2): 192
-(1,3): 144
-(2,0): 456
-(2,1): 312
-(2,2): 264
-(3,0): 384
-(3,1): 336
-(4,0): 360
+(0,1): 36
+(0,2): 24
+(0,3): 36
+(1,0): 96
+(1,1): 120
+(1,2): 96
+(1,3): 72
+(2,0): 228
+(2,1): 156
+(2,2): 132
+(3,0): 192
+(3,1): 168
+(4,0): 180
 ```
 
 ### Chord graphs

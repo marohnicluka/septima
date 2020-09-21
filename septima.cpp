@@ -512,13 +512,19 @@ int main(int argc, char *argv[]) {
                 trans.insert(trans.end(), lst.begin(), lst.end());
             }
         }
+        int erased_count = 0;
         for (int i = 0; i < int(trans.size()); ++i) {
             for (int j = trans.size(); j-->i+1;) {
-                if (trans[i].is_congruent(trans[j]))
+                if (trans[i].is_congruent(trans[j]) ||
+                        (prep_scheme == NO_PREPARATION && trans[i].is_congruent(trans[j].retrograde()))) {
                     trans.erase(trans.begin() + j);
+                    ++erased_count;
+                }
             }
         }
-        int total = trans.size(), eff = 0, D, vls, vls_avg = 0;
+        if (verbose && erased_count > 0)
+            std::cerr << "Removed " << erased_count << " duplicates" << std::endl;
+        int total = trans.size(), eff = 0, D, vls, vls_avg = 0, ct = 0, contrary = 0;
         double pde = 0.0;
         std::map<int,int> vl_map;
         std::map<ipair,int> vlp_map;
@@ -533,6 +539,10 @@ int main(int argc, char *argv[]) {
             if (vls <= D)
                 ++eff;
             else pde += (vls - D) / (double)D;
+            if (it->acts_identically_on_pc_intersection())
+                ++ct;
+            if (it->directional_vl_shift() < it->vl_shift())
+                ++contrary;
         }
         double eff_pc = (eff * 100.0) / (double)total;
         double exc = pde / (double)total;
@@ -541,6 +551,8 @@ int main(int argc, char *argv[]) {
                   << "Efficient transitions: " << eff << " (" << eff_pc << "%)\n"
                   << "Average voice-leading shift: " << vlsa << " semitones\n"
                   << "Average relative excess: " << exc * 100.0 << "%\n"
+                  << "Common tones are fixed in " << ct << " transitions\n"
+                  << "Contrary motion occurs in " << contrary << " transitions\n"
                   << "Distribution by voice-leading shift:\n";
         for (std::map<int,int>::const_iterator it = vl_map.begin(); it != vl_map.end(); ++it) {
             std::cout << it->first << ": " << it->second << "\n";
