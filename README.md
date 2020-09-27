@@ -102,7 +102,7 @@ septima <task> [<option(s)>] CHORDS or FILE
 
 #### Entering chords
 
-Chords are entered using symbols in form *root*:*quality*. *root* is one of the integers 0,1,…,11, which represent pitch classes. *quality* is either
+Chords are entered using symbols in form *root*:*quality*. *root* is one of the integers 0,1,…,11, which represent pitch classes. *quality* (following the notation proposed by [Harte (2005)](http://ismir2005.ismir.net/proceedings/1080.pdf)) is either
 
 - **d7** (dominant seventh),
 - **hdim7** (half-diminished seventh),
