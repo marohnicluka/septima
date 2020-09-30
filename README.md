@@ -20,7 +20,7 @@ A command-line interface is provided for using the above features from a termina
 2. GNU Linear Programming Kit ([GLPK](https://www.gnu.org/software/glpk/))
 3. GNU Scientific Library ([GSL](https://www.gnu.org/software/gsl/))
 
-It is recommended (albeit not required) that [Lilypond](https://www.lilypond.org) and [Graphviz](https://graphviz.org/) are installed on your system.
+It is recommended (but not required) that [Lilypond](https://www.lilypond.org) and [Graphviz](https://graphviz.org/) are installed on your system.
 
 In Ubuntu, mandatory dependencies can be installed by typing:
 
