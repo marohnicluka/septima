@@ -472,9 +472,9 @@ int main(int argc, char *argv[]) {
                               << chords.size() << " chords " << chords << std::endl;
                 output_transitions(trans, prep_scheme, lily, false);
                 if (verbose) {
-                    std::cout << "\nStatistics:" << std::endl;
+                    std::cerr << "\nStatistics:" << std::endl;
                     for (std::map<int,int>::const_iterator it = vl_types.begin(); it != vl_types.end(); ++it) {
-                        std::cout << "Exactly " << it->first << " voice(s) move stepwise in "
+                        std::cerr << "Exactly " << it->first << " voice(s) move stepwise in "
                                   << it->second << " transitions" << std::endl;
                     }
                 }

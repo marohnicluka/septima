@@ -612,7 +612,7 @@ std::vector<Transition> Transition::elementary_types(const std::vector<Chord> &c
                     }
                 }
                 if (found) {
-                    if (kt->is_closer_than(*st, 0)) {
+                    if (kt->is_closer_than(*st, z)) {
                         cls.erase(st);
                         cls.push_back(*kt);
                     }
