@@ -196,19 +196,19 @@ septima -ts -aa d7 hdim7 m7 maj7 dim7
 Output:
 
 ```
-Total transitions: 1536
-Efficient transitions: 1464 (95.3125%)
-Average voice-leading shift: 3.79688 semitones
-Average relative excess: 1.875%
-Common tones are fixed in 1476 transitions
-Contrary motion occurs in 384 transitions
+Total transitions: 1392
+Efficient transitions: 1320 (94.8276%)
+Average voice-leading shift: 3.72414 semitones
+Average relative excess: 2.06897%
+Common tones are fixed in 1320 transitions
+Contrary motion occurs in 336 transitions
 Distribution by voice-leading shift:
 1: 96
-2: 264
+2: 252
 3: 312
-4: 360
-5: 264
-6: 168
+4: 300
+5: 216
+6: 144
 7: 72
 Distribution over mn-pair types:
 (0,1): 36
@@ -218,12 +218,12 @@ Distribution over mn-pair types:
 (1,1): 120
 (1,2): 96
 (1,3): 72
-(2,0): 228
+(2,0): 216
 (2,1): 156
-(2,2): 132
+(2,2): 108
 (3,0): 192
-(3,1): 168
-(4,0): 180
+(3,1): 120
+(4,0): 120
 ```
 
 ### Chord graphs

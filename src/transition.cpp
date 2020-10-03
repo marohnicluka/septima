@@ -511,14 +511,12 @@ std::set<Transition> Transition::elementary_transitions(const Chord &c1, const C
                     f[j] = sym4[i][j];
                     if (Tone::lof_distance(it->tone(j), jt->tone(f[j])) > k)
                         break;
-                    else s += Tone::modd(3 * Tone::lof_distance(it->tone(j), jt->tone(f[j])), 7);
+                    s += Tone::modd(3 * Tone::lof_distance(it->tone(j), jt->tone(f[j])), 7);
                 }
                 if (j == 4 && s == Tone::modd(2 * Tone::lof_distance(it->tone(rv1), jt->tone(rv2)), 7)) {
                     Realization r1(*it), r2(*jt);
                     r2.arrange(f);
                     Transition T(r1, r2);
-                    if (T.lof_shift() == 28)
-                        continue;
                     if (p == PREPARE_GENERIC) {
                         sv = r2.generic_seventh_voice();
                         if (r1.tone(sv) == r2.tone(sv))
