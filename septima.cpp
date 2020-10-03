@@ -474,8 +474,9 @@ int main(int argc, char *argv[]) {
                 if (verbose) {
                     std::cerr << "\nStatistics:" << std::endl;
                     for (std::map<int,int>::const_iterator it = vl_types.begin(); it != vl_types.end(); ++it) {
-                        std::cerr << "Exactly " << it->first << " voice(s) move stepwise in "
-                                  << it->second << " transitions" << std::endl;
+                        std::cerr << "Exactly " << abs(it->first) << " voice(s) move stepwise "
+                                  << (prep_scheme != NO_PREPARATION ? (it->first < 0 ? "downwards " : "upwards ") : "")
+                                  << "in " << it->second << " transitions" << std::endl;
                     }
                 }
             }

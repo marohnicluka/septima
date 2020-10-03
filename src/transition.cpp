@@ -664,7 +664,7 @@ void Transition::simplify_enharmonic_class(std::vector<Transition> &st) {
     if (st.empty())
         st = m[2];
     for (std::vector<Transition>::const_iterator it = st.begin(); it != st.end(); ++it) {
-        n[it->degree()].push_back(*it);
+        n[it->lof_shift()].push_back(*it);
     }
     for (std::map<int,std::vector<Transition> >::const_iterator it = n.begin(); it != n.end(); ++it) {
         if (!it->second.empty()) {
