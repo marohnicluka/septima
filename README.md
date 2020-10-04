@@ -90,6 +90,7 @@ septima <task> [<option(s)>] CHORDS or FILE
 - `-dg`, `--degree` &mdash; Specify degree of elementary transitions. Default: unset.
 - `-aa`, `--allow-augmented` &mdash; Allow augmented realizations. By default, German sixths and Tristan chords are disabled.
 - `-fa`, `--force-augmented` &mdash; Spell first realization in a transition as augmented sixth.
+- `-nr`, `--no-respell`&mdash; Do not respell augmented sixths.
 - `-d`, `--domain` &mdash; Specify domain on the line of fifths. It is entered as a comma-separated list of integers. Blocks of several consecutive integers, such as e.g. 1,2,3,4,5, can be entered as 1:5. The default domain is {−15,−14,…,15}, which corresponds to notes from G&#119083; to A&#119082;.
 - `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths. Default: 0, which corresponds to the note D.
 - `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are **symbol**, **number**, and **latex**. Default: **symbol**.
