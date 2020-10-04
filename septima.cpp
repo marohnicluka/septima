@@ -45,6 +45,7 @@ static void show_usage(std::string name) {
               << " -aa,--allow-augmented    Allow augmented realizations\n"
               << " -fa,--force-augmented    Spell first realization in a transition as augmented sixth\n"
               << " -nr,--no-respell         Do not respell augmented sixths\n"
+              << " -ns,--no-simplification  Do not discard enharmonic equivalents with larger voice-leading L1 norm\n"
               << " -d, --domain             Specify domain on the line of fifths\n"
               << " -z, --tonal-center       Specify tonal center on the line of fifths\n"
               << " -lf,--label-format       Specify format for chord graph labels\n"
@@ -105,7 +106,7 @@ int main(int argc, char *argv[]) {
     }
     int task = 0, deg = 0, cls = 7, z = 0, lily = 0;
     double w1 = 1.0, w2 = 1.75, w3 = 0.25;
-    bool aug = false, faug = false, respell = true, verbose = true, cs = false, best = true;
+    bool aug = false, faug = false, respell = true, verbose = true, cs = false, best = true, simp = true;
     PreparationScheme prep_scheme = NO_PREPARATION;
     std::string label_format = "symbol", vc_format = "none";
     std::string input_filename = "";
@@ -166,6 +167,8 @@ int main(int argc, char *argv[]) {
                 faug = true;
             } else if (arg == "-nr" || arg == "--no-respell") {
                 respell = false;
+            } else if (arg == "-ns" || arg == "--no-simplification") {
+                simp = false;
             } else if (arg == "-d" || arg == "--domain") {
                 if (i + 1 < argc) {
                     domain = Domain::parse(argv[++i]);
@@ -432,8 +435,7 @@ int main(int argc, char *argv[]) {
                 }
                 trans.insert(trans.end(), tr.begin(), tr.end());
             }
-            if (respell)
-                Transition::simplify_enharmonic_classes(trans);
+            Transition::simplify_enharmonic_classes(trans, respell, simp);
             isolate_degree(trans, deg);
             std::sort(trans.begin(), trans.end());
             if (trans.empty()) {
@@ -457,7 +459,7 @@ int main(int argc, char *argv[]) {
         } else std::cerr << "Error: task --transitions requires at least two distinct chords" << std::endl;
     } else if (task == 5) { // generate structural classes of elementary transitions
         if (chords.size() > 1) {
-            std::vector<Transition> trans = Transition::elementary_types(chords, cls, prep_scheme, z, aug, respell);
+            std::vector<Transition> trans = Transition::elementary_types(chords, cls, prep_scheme, z, aug, respell, simp);
             isolate_degree(trans, deg);
             std::map<int,int> vl_types;
             for (std::vector<Transition>::const_iterator it = trans.begin(); it != trans.end(); ++it) {
@@ -508,8 +510,7 @@ int main(int argc, char *argv[]) {
                 if (it == jt)
                     continue;
                 lst = Transition::elementary_classes(*it, *jt, cls, prep_scheme, z, aug);
-                if (respell)
-                    Transition::simplify_enharmonic_classes(lst);
+                Transition::simplify_enharmonic_classes(lst, respell, simp);
                 trans.insert(trans.end(), lst.begin(), lst.end());
             }
         }

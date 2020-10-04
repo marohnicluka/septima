@@ -561,7 +561,8 @@ std::vector<Transition> Transition::elementary_classes(const Chord &c1, const Ch
     return ret;
 }
 
-std::vector<Transition> Transition::elementary_types(const std::vector<Chord> &chords, int k, PreparationScheme p, int z, bool aug, bool simp) {
+std::vector<Transition> Transition::elementary_types(const std::vector<Chord> &chords, int k, PreparationScheme p,
+                                                     int z, bool aug, bool respell_aug, bool favor_diatonic) {
     std::vector<Chord>::const_iterator it, jt;
     std::vector<Transition>::const_iterator kt, st;
     std::vector<Transition> cls;
@@ -571,8 +572,7 @@ std::vector<Transition> Transition::elementary_types(const std::vector<Chord> &c
             if (it == jt)
                 continue;
             std::vector<Transition> cl = elementary_classes(*it, *jt, k, p, z, aug);
-            if (simp)
-                simplify_enharmonic_classes(cl);
+                simplify_enharmonic_classes(cl, respell_aug, favor_diatonic);
 #if 0
             std::set<ipair> pmn = it->Pmn_relations(*jt);
             std::set<ipair>::const_iterator pt;
@@ -649,36 +649,39 @@ std::set<std::vector<Transition> > Transition::enharmonic_classes(const std::vec
     return ret;
 }
 
-void Transition::simplify_enharmonic_class(std::vector<Transition> &st) {
+void Transition::simplify_enharmonic_class(std::vector<Transition> &st, bool respell_aug, bool favor_diatonic) {
     if (st.empty())
         return;
     std::map<int,std::vector<Transition> > m, n;
-    for (std::vector<Transition>::const_iterator it = st.begin(); it != st.end(); ++it) {
-        m[it->augmented_count()].push_back(*it);
+    if (respell_aug) {
+        for (std::vector<Transition>::const_iterator it = st.begin(); it != st.end(); ++it) {
+            m[it->augmented_count()].push_back(*it);
+        }
+        st = m[0];
+        if (st.empty())
+            st = m[1];
+        if (st.empty())
+            st = m[2];
     }
-    st = m[0];
-    if (st.empty())
-        st = m[1];
-    if (st.empty())
-        st = m[2];
-    for (std::vector<Transition>::const_iterator it = st.begin(); it != st.end(); ++it) {
-        n[it->lof_shift()].push_back(*it);
-    }
-    for (std::map<int,std::vector<Transition> >::const_iterator it = n.begin(); it != n.end(); ++it) {
-        if (!it->second.empty()) {
-            st = it->second;
-            break;
+    if (favor_diatonic) {
+        for (std::vector<Transition>::const_iterator it = st.begin(); it != st.end(); ++it) {
+            n[it->lof_shift()].push_back(*it);
+        }
+        for (std::map<int,std::vector<Transition> >::const_iterator it = n.begin(); it != n.end(); ++it) {
+            if (!it->second.empty()) {
+                st = it->second;
+                break;
+            }
         }
     }
-    assert(!st.empty());
 }
 
-void Transition::simplify_enharmonic_classes(std::vector<Transition> &cl) {
+void Transition::simplify_enharmonic_classes(std::vector<Transition> &cl, bool respell_aug, bool favor_diatonic) {
     std::set<std::vector<Transition> > ecl = Transition::enharmonic_classes(cl);
     cl.clear();
     for (std::set<std::vector<Transition> >::const_iterator et = ecl.begin(); et != ecl.end(); ++et) {
         std::vector<Transition> tv = *et;
-        simplify_enharmonic_class(tv);
+        simplify_enharmonic_class(tv, respell_aug, favor_diatonic);
         cl.insert(cl.end(), tv.begin(), tv.end());
     }
 }

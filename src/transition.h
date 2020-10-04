@@ -189,18 +189,19 @@ public:
     /* returns the list of transitions representing the structural equivalence classes of elementary transitions
      * of class k from c to d (representatives are chosen near z on the line of fifths) */
 
-    static std::vector<Transition> elementary_types(const std::vector<Chord> &chords, int k, PreparationScheme p, int z, bool aug, bool simp = true);
+    static std::vector<Transition> elementary_types(const std::vector<Chord> &chords, int k, PreparationScheme p,
+                                                    int z, bool aug, bool respell_aug, bool favor_diatonic);
     /* returns the set of types of elementary transitions of class k, enharmonic classes are simplifed */
 
     static std::set<std::vector<Transition> > enharmonic_classes(const std::vector<Transition> &st);
     /* returns the set of enharmonic classes of transitions in st */
 
-    static void simplify_enharmonic_class(std::vector<Transition> &st);
+    static void simplify_enharmonic_class(std::vector<Transition> &st, bool respell_aug, bool favor_diatonic);
     /* simplifies the class st of enharmonically equal transitions by
      * respelling augmented sixths and reducing the voice-leading infinity norm
      */
 
-    static void simplify_enharmonic_classes(std::vector<Transition> &cl);
+    static void simplify_enharmonic_classes(std::vector<Transition> &cl, bool respell_aug, bool favor_diatonic);
     /* a convenience routine */
 
     static const int sym4[][4];
