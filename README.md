@@ -1,4 +1,4 @@
-# Septima library documentation
+# Septima library
 
 ## Introduction
 
