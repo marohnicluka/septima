@@ -31,7 +31,7 @@ sudo apt-get install -y build-essential libglpk-dev libgsl-dev
 Optional dependencies are installed by typing:
 
 ```
-sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex giac
+sudo apt-get install -y lilypond graphviz texlive-latex-recommended dot2tex
 ```
 
 #### Build & install Septima
@@ -96,7 +96,7 @@ septima <task> [<option(s)>] CHORDS or FILE
 - `-z`, `--tonal-center` &mdash; Specify tonal center on the line of fifths. Default: 0, which corresponds to the note D.
 - `-lf`, `--label-format` &mdash; Specify format for chord graph labels. Choices are **symbol**, **number**, and **latex**. Default: **symbol**.
 - `-p`, `--preparation` &mdash; Specify preparation scheme for elementary transitions. Choices are **none**, **generic** (for preparation of generic sevenths), **acoustic** (for preparation of acoustic sevenths), and **classical** (for preparation of only non-dominant seventh chords). Default: **none**.
-- `-w`, `--weights` &mdash; Specify weight parameters for the voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 0.2.
+- `-w`, `--weights` &mdash; Specify weight parameters for the voicing algorithm. Three nonnegative floating-point values are required: tonal-center proximity weight *w*&#8321;, voice-leading complexity weight *w*&#8322;, and penalty *w*&#8323; for augmented sixths. By default, *w*&#8321; = 1.0, *w*&#8322; = 1.75, and *w*&#8323; = 1.4.
 - `-vc`, `--vertex-centrality` &mdash; Show centrality measure with each vertex of the chord graph. Choices are **none**, **label**, and **color**. Default: **none**.
 - `-ly`, `--lilypond` &mdash; Output transitions and voicings in Lilypond code.
 - `-cs`, `--chord-symbols` &mdash; Print chord symbols above realizations in Lilypond output.

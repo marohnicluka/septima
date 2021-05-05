@@ -27,11 +27,10 @@ TransitionNetwork::TransitionNetwork(const ChordGraph &cg, const ivector &walk, 
 {
     X0 = r;
     nl = walk.size() - 1;
-    M = cg.class_index();
     _num_paths = 1;
     glp_vertex *v, *w;
     glp_arc *a;
-    int mc, l, vi, i, j, tcn, d = 7;
+    int mc, l, vi, i, j, tcn, d = 1;
     ivector f;
     std::map<int,ivector> levels;
     /* create vertices, arranged in levels */
@@ -63,13 +62,13 @@ TransitionNetwork::TransitionNetwork(const ChordGraph &cg, const ivector &walk, 
                 phi_map[a] = f;
                 cues_map[a] = mc > 0;
                 /* compute the arc weight */
-                double wg = wgh[0] * t2.second().lof_point_distance(z) / d + sqrt(tcn / 4) * wgh[1] / M;
+                double wg = wgh[0] * t2.second().lof_point_distance(z) / d + sqrt(tcn / 4) * wgh[1] / d;
                 if (t2.second().is_augmented_sixth())
                     wg += wgh[2];
                 if (l == 1) {
                     assert(t1.glue(X0, mc, tcn, f));
                     wg += wgh[0] * X0.lof_point_distance(z) / d;
-                    wg += wgh[0] * t1.second().lof_point_distance(z) / d + sqrt(tcn / 4) * wgh[1] / M;
+                    wg += wgh[0] * t1.second().lof_point_distance(z) / d + sqrt(tcn / 4) * wgh[1] / d;
                     if (t1.second().is_augmented_sixth())
                         wg += wgh[2];
                     if (X0.is_augmented_sixth())
